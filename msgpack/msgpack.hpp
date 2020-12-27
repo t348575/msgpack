@@ -11,55 +11,7 @@
 #include "containers/byte.hpp"
 #include "formats.hpp"
 
-class msgpack {
-
-public:
-
-	msgpack() = default;
-
-	// packing functions - STL
-
-	template <typename T>
-	void pack(std::vector<T> src, byte::container& dest, bool initial = true) {
-		size_t n = src.size();
-		if (n <= 15) {
-			dest.push_back(fixarray_t(n));
-		}
-		else if (n <= umax16) {
-			dest.push_back(uint8_t(arr16));
-			dest.push_back(uint16_t(n));
-		}
-		else if (n <= umax32) {
-			dest.push_back(uint8_t(arr32));
-			dest.push_back(uint32_t(n));
-		}
-		if (initial) {
-			dest.clear_resize(int(n * 0.4));
-		}
-		for (uint32_t i = 0; i < n; i++) {
-			pack(src[i], dest);
-		}
-	}
-
-	template<typename ...T>
-	void pack(std::tuple<T...> src, byte::container& dest, bool initial = true) {
-		size_t n = std::tuple_size<decltype(src)>::value;
-		if (initial) {
-			dest.clear_resize(int(n * 0.4));
-		}
-		if (n <= 15) {
-			dest.push_back(fixarray_t(n));
-		}
-		else if (n <= umax16) {
-			dest.push_back(uint8_t(arr16));
-			dest.push_back(uint16_t(n));
-		}
-		else if (n <= umax32) {
-			dest.push_back(uint8_t(arr32));
-			dest.push_back(uint32_t(n));
-		}
-		iterate_tuple(src, dest);
-	}
+namespace msgpack {
 
 	// packing functions - primitive
 
@@ -114,7 +66,7 @@ public:
 		dest.push_back(src, n);
 	}
 	void pack(std::string src, byte::container& dest) {
-		uint32_t len = src.length();
+		uint32_t len = static_cast<uint32_t>(src.length());
 		if (len <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(len)));
 		}
@@ -137,6 +89,64 @@ public:
 	}
 
 	// integers
+
+	// unsigned int
+
+	void pack_uint(uint64_t src, byte::container& dest) {
+		if (src <= umaxfixint) {
+			dest.push_back(uint8_t(ufixint_t<uint64_t>(src)));
+		}
+		else if (src <= umax8) {
+			dest.push_back(uint8_t(uint8));
+			dest.push_back(uint8_t(src));
+		}
+		else if (src <= umax16) {
+			dest.push_back(uint8_t(uint16));
+			dest.push_back(uint16_t(src));
+		}
+		else if (src <= umax32) {
+			dest.push_back(uint8_t(uint32));
+			dest.push_back(uint32_t(src));
+		}
+		else if (src <= umax64) {
+			dest.push_back(uint8_t(uint64));
+			dest.push_back(uint64_t(src));
+		}
+		else {
+			throw std::range_error(std::to_string(src) + " out of range!");
+		}
+	}
+
+	// signed int
+
+	void pack_int(int64_t src, byte::container& dest) {
+		uint64_t cmp = src;
+		if (int64_t(cmp) < 0) {
+			cmp = int64_t(cmp) * -1;
+		}
+		if (cmp <= maxfixint) {
+			dest.push_back(uint8_t(fixint_t<int64_t>(cmp)));
+		}
+		else if (cmp <= max8) {
+			dest.push_back(uint8_t(int8));
+			dest.push_back(uint8_t(src));
+		}
+		else if (cmp <= max16) {
+			dest.push_back(uint8_t(int16));
+			dest.push_back(uint16_t(src));
+		}
+		else if (cmp <= max32) {
+			dest.push_back(uint8_t(int32));
+			dest.push_back(uint32_t(src));
+		}
+		else if (cmp <= max64) {
+			dest.push_back(uint8_t(int64));
+			dest.push_back(uint64_t(src));
+		}
+		else {
+			throw std::range_error(std::to_string(src) + " out of range!");
+		}
+	}
 
 	void pack(uint8_t src, byte::container& dest) {
 		pack_uint(static_cast<uint64_t>(src), dest);
@@ -163,80 +173,9 @@ public:
 		pack_int(src, dest);
 	}
 
-	// unsigned int
-
-	void pack_uint(uint64_t src, byte::container& dest) {
-		uint8_t prefix;
-		if (src <= umaxfixint) {
-			prefix = ufixint_t<uint64_t>(src);
-			dest.push_back(&prefix);
-		}
-		else if (src <= umax8) {
-			prefix = uint8;
-			dest.push_back(&prefix);
-			dest.push_back(uint8_t(src));
-		}
-		else if (src <= umax16) {
-			prefix = uint16;
-			dest.push_back(&prefix);
-			dest.push_back(uint16_t(src));
-		}
-		else if (src <= umax32) {
-			prefix = uint32;
-			dest.push_back(&prefix);
-			dest.push_back(uint32_t(src));
-		}
-		else if (src <= umax64) {
-			prefix = uint64;
-			dest.push_back(&prefix);
-			dest.push_back(uint64_t(src));
-		}
-		else {
-			throw std::range_error(std::to_string(src) + " out of range!");
-		}
-	}
-
-	// signed int
-
-	void pack_int(int64_t src, byte::container& dest) {
-		uint8_t prefix;
-		uint64_t cmp = src;
-		if (int64_t(cmp) < 0) {
-			cmp = int64_t(cmp) * -1;
-		}
-		if (cmp <= maxfixint) {
-			prefix = fixint_t<int64_t>(cmp);
-			dest.push_back(&prefix);
-		}
-		else if (cmp <= max8) {
-			prefix = int8;
-			dest.push_back(&prefix);
-			dest.push_back(uint8_t(src));
-		}
-		else if (cmp <= max16) {
-			prefix = int16;
-			dest.push_back(&prefix);
-			dest.push_back(uint16_t(src));
-		}
-		else if (cmp <= max32) {
-			prefix = int32;
-			dest.push_back(&prefix);
-			dest.push_back(uint32_t(src));
-		}
-		else if (cmp <= max64) {
-			prefix = int64;
-			dest.push_back(&prefix);
-			dest.push_back(uint64_t(src));
-		}
-		else {
-			throw std::range_error(std::to_string(src) + " out of range!");
-		}
-	}
-
 	// double
 
 	void pack(double src, byte::container& dest) {
-		uint8_t prefix;
 		float src_as_float = float(src);
 		double src_back_to_double = double(src_as_float);
 		if (src_back_to_double == src) {
@@ -254,7 +193,6 @@ public:
 	// float
 
 	void pack(float src, byte::container& dest) {
-		uint8_t prefix;
 		dest.push_back(uint8_t(float32));
 		dest.push_back(src);
 	}
@@ -276,7 +214,9 @@ public:
 		dest.push_back(uint8_t(nil));
 	}
 
-private:
+
+	// stl iterators
+
 	template <size_t I = 0, typename... Ts>
 	typename std::enable_if<I == sizeof...(Ts), void>::type
 		iterate_tuple(std::tuple<Ts...> tup, byte::container& dest) {
@@ -289,6 +229,51 @@ private:
 		pack(std::get<I>(tup), dest);
 		iterate_tuple<I + 1>(tup, dest);
 	}
+
+	// packing functions - STL
+
+	template <typename T>
+	void pack(std::vector<T> src, byte::container& dest, bool initial = true) {
+		size_t n = src.size();
+		if (n <= 15) {
+			dest.push_back(fixarray_t(n));
+		}
+		else if (n <= umax16) {
+			dest.push_back(uint8_t(arr16));
+			dest.push_back(uint16_t(n));
+		}
+		else if (n <= umax32) {
+			dest.push_back(uint8_t(arr32));
+			dest.push_back(uint32_t(n));
+		}
+		if (initial) {
+			dest.clear_resize(int(n * 0.4));
+		}
+		for (uint32_t i = 0; i < n; i++) {
+			pack(src[i], dest);
+		}
+	}
+
+	template<typename ...T>
+	void pack(std::tuple<T...> src, byte::container& dest, bool initial = true) {
+		size_t n = std::tuple_size<decltype(src)>::value;
+		if (initial) {
+			dest.clear_resize(int(n * 0.4));
+		}
+		if (n <= 15) {
+			dest.push_back(fixarray_t(n));
+		}
+		else if (n <= umax16) {
+			dest.push_back(uint8_t(arr16));
+			dest.push_back(uint16_t(n));
+		}
+		else if (n <= umax32) {
+			dest.push_back(uint8_t(arr32));
+			dest.push_back(uint32_t(n));
+		}
+		iterate_tuple(src, dest);
+	}
+
 };
 
 #endif

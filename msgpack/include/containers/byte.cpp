@@ -226,6 +226,18 @@ namespace byte {
 		data = temp_arr;
 	}
 
+	// internal
+
+	void container::check_expand() {
+		if (s == c) {
+			c = c * 2;
+			uint8_t* temp_arr = new uint8_t[c];
+			std::copy(data, data + s, temp_arr);
+			delete[] data;
+			data = temp_arr;
+		}
+	}
+
 	void container::clear_resize(size_t reserve) {
 		s = 0;
 		c = reserve + 1;
@@ -236,18 +248,6 @@ namespace byte {
 	void container::check_resize(size_t bytes) {
 		if (bytes + s >= c) {
 			resize(bytes - c + s);
-		}
-	}
-
-	// internal
-
-	void container::check_expand() {
-		if (s == c) {
-			c = c * 2;
-			uint8_t* temp_arr = new uint8_t[c];
-			std::copy(data, data + s, temp_arr);
-			delete[] data;
-			data = temp_arr;
 		}
 	}
 
