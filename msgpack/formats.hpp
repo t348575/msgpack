@@ -1,10 +1,17 @@
 #include <cstdint>
 
-#define max4 0xF
-#define max8 0xFF
-#define max16 0xFFFF
-#define max32 0XFFFFFFFF
-#define max64 0xFFFFFFFFFFFFFFFF
+#define umaxfixint 0x7F
+#define umax8 0xFF
+#define umax16 0xFFFF
+#define umax32 0XFFFFFFFF
+#define umax64 0xFFFFFFFFFFFFFFFF
+#define maxfixint 0x20
+#define max8 0x80
+#define max16 0x8000
+#define max32 0x80000000
+#define max64 0x8000000000000000
+#define fix32 0X1F
+#define single_char 0xA1
 
 #define ufixint 0x00
 #define fixmap 0x80
@@ -41,7 +48,7 @@
 #define arr32 0xDD
 #define map16 0xDE
 #define map32 0xDF
-#define fixint 0xE0
+#define fixint 0xFF
 
 template<typename T>
 static inline uint8_t ufixint_t(T n) {
@@ -50,7 +57,7 @@ static inline uint8_t ufixint_t(T n) {
 
 template<typename T>
 static inline uint8_t fixint_t(T n) {
-	return uint8_t(fixint + n);
+	return uint8_t(fixint - n + 1);
 }
 
 static inline uint8_t fixmap_t(size_t n) {

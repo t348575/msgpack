@@ -5,6 +5,7 @@
 #include <iterator>
 #include <cstddef>
 #include <sstream>
+#include <iomanip>
 
 namespace byte {
 
@@ -32,6 +33,14 @@ namespace byte {
 		void push_back(uint32_t* value);
 		void push_back(uint64_t value);
 		void push_back(uint64_t* value);
+		void push_back(float value);
+		void push_back(float* value);
+		void push_back(double value);
+		void push_back(double* value);
+		void push_back(char value);
+		void push_back(const char* src, uint32_t len);
+		void push_back(char* src, uint32_t len);
+		void push_back(std::string& src, uint32_t len = 0);
 
 		// utility
 
@@ -83,10 +92,14 @@ namespace byte {
 
 	};
 
-	/*template<typename T>
-	std::string hexify(T i);
+	template<typename T>
+	std::string hexify(T i) {
+		std::stringstream stream;
+		stream << std::setfill('0') << std::setw(2) << std::hex << i;
+		return stream.str();
+	}
 
-	std::stringstream to_stringstream(container& element, bool hex = true);*/
+	std::stringstream to_stringstream(container& element, bool hex = true);
 };
 
 #endif

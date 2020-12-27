@@ -1,9 +1,10 @@
-#include <iostream>
-#include <chrono>
 #include <vector>
+#include <tuple>
+#include <cstdint>
+#include <iostream>
+#include <sstream>
 
 #include "msgpack.hpp"
-
 using namespace std;
 int main() {
 	std::string z;
@@ -25,12 +26,9 @@ int main() {
 	std::cout << "Average time: " << (double)(sum / 100) << std::endl;*/
 	byte::container dest;
 	msgpack a;
-	vector<uint32_t> b;
-	for (uint32_t i = 0; i < 16; i++) {
-		b.push_back(i);
-	}
-	std::cout << std::endl;
-	a.pack<uint32_t>(b, dest);
-	// std::cout << byte::to_stringstream(dest).str() << std::endl;
+	tuple <char, unsigned int, double> t;
+	t = make_tuple('a', 10, 15.5);
+	a.pack(t, dest);
+	std::cout << byte::to_stringstream(dest).str() << std::endl;
 	return 0;
 }

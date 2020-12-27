@@ -18,21 +18,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="msgpack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="include\containers\byte.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\containers\byte.hpp">
+    <ClInclude Include="formats.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="msgpack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="formats.hpp">
+    <ClInclude Include="include\containers\byte.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
