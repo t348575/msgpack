@@ -12,6 +12,8 @@
 #define max64 0x8000000000000000
 #define fix32 0X1F
 #define single_char 0xA1
+#define lenient_size 0x3E8
+#define compression_percent 0.4
 
 #define ufixint 0x00
 #define fixmap 0x80

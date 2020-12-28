@@ -48,12 +48,13 @@ namespace byte {
 		size_t size() const;
 		size_t capacity() const;
 		void resize(size_t reserve);
-		void clear_resize(size_t reserve);
-		void check_resize(size_t reserve);
+		bool free_empty(bool lenient = true);
 
 		// internal
 
 		void check_expand();
+		void clear_resize(size_t reserve);
+		void check_resize(size_t reserve);
 
 		// iterator class
 

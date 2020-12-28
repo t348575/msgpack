@@ -5,6 +5,7 @@
 #include <string>
 
 #include "byte.hpp"
+#include "../formats.hpp"
 
 namespace byte {
 
@@ -224,6 +225,26 @@ namespace byte {
 		std::copy(data, data + s, temp_arr);
 		delete[] data;
 		data = temp_arr;
+	}
+
+	bool container::free_empty(bool lenient) {
+		if (lenient && s != c - 1 && c > lenient_size && c - lenient_size > s) {
+			c = s + 1;
+			uint8_t* temp_arr = new uint8_t[c];
+			std::copy(data, data + s, temp_arr);
+			delete[] data;
+			data = temp_arr;
+			return true;
+		}
+		else if (!lenient) {
+			c = s + 1;
+			uint8_t* temp_arr = new uint8_t[c];
+			std::copy(data, data + s, temp_arr);
+			delete[] data;
+			data = temp_arr;
+			return true;
+		}
+		return false;
 	}
 
 	// internal

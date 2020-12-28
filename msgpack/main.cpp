@@ -7,27 +7,34 @@
 #include "msgpack.hpp"
 using namespace std;
 int main() {
-	std::string z;
+	string z;
 	/*double runs[100];
 	double sum = 0;
 	for (int j = 0; j < 100; j++) {
-		auto start = std::chrono::high_resolution_clock::now();
-		std::vector<uint8_t> a(1000000000);
+		auto start = chrono::high_resolution_clock::now();
+		vector<uint8_t> a(1000000000);
 		for (int i = 0; i < 1000000000; i++) {
 			a.push_back((uint8_t)14);
 		}
-		auto end = std::chrono::high_resolution_clock::now();
-		runs[j] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		std::cout << "Took: " << runs[j] << std::endl;
+		auto end = chrono::high_resolution_clock::now();
+		runs[j] = (double)chrono::duration_cast<chrono::milliseconds>(end - start).count();
+		cout << "Took: " << runs[j] << endl;
 	}
 	for (int i = 0; i < 100; i++) {
 		sum += runs[i];
 	}
-	std::cout << "Average time: " << (double)(sum / 100) << std::endl;*/
+	cout << "Average time: " << (double)(sum / 100) << endl;*/
 	byte::container dest;
-	tuple <char, unsigned int, double> t;
-	t = make_tuple('a', 10, 15.5);
+	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t> > t;
+	vector<unsigned int> vec{ 1, 2, 3, 4, 5 };
+	string abc = "test string";
+	map<string, uint64_t> cde;
+	cde.insert(make_pair(string("abc"), 4142342342342343));
+	cde.insert(make_pair(string("cde"), 5));
+	cde.insert(make_pair(string("def"), 11231233));
+	t = make_tuple('a', 10, 0.333333333333333, abc, vec, cde);
 	msgpack::pack(t, dest);
-	std::cout << byte::to_stringstream(dest).str() << std::endl;
+	cout << byte::to_stringstream(dest).str() << endl;
+	cout << "Packed size: " << dest.size() << endl;
 	return 0;
 }
