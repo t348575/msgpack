@@ -5,12 +5,31 @@
 #include <cstdint>
 #include <iostream>
 #include <sstream>
+#include <type_traits>
 
 #include "msgpack.hpp"
 
+struct AllocationMetrics {
+	uint32_t TotalAllocated = 0;
+	uint32_t TotalFreed = 0;
+	uint32_t CurrentUsage() { return TotalAllocated - TotalFreed; }
+};
+
+static AllocationMetrics s_AllocationMetrics;
+
+void* operator new(size_t size) {
+	s_AllocationMetrics.TotalAllocated += size;
+	return malloc(size);
+}
+
+void operator delete(void* memory, size_t size) {
+	s_AllocationMetrics.TotalFreed += size;
+	free(memory);
+}
+
 using namespace std;
 
-#define TEST_NUM 100
+#define TEST_NUM 1256
 
 #define maxchar 255
 #define minchar 0
@@ -32,7 +51,7 @@ random_device rd;
 mt19937 character_mt(rd());
 uniform_int_distribution<uint32_t> character_pool(0, 255);
 mt19937 size_mt(rd());
-uniform_int_distribution<uint32_t> size_pool(0, 256);
+uniform_int_distribution<uint32_t> size_pool(0, 128);
 
 char get_char() {
 	if (current_char == maxchar) {
@@ -79,7 +98,7 @@ string get_string() {
 }
 
 int main() {
-	string z;
+	string z;	
 	/*double runs[100];
 	double sum = 0;
 	for (int j = 0; j < 100; j++) {
@@ -97,19 +116,19 @@ int main() {
 	}
 	cout << "Average time: " << (double)(sum / 100) << endl;*/
 	/*msgpack_byte::container dest;
-	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t> > t;
+	// tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t; 
+	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
 	vector<unsigned int> vec{ 1, 2, 3, 4, 5 };
 	string abc = "test string";
 	map<string, uint64_t> cde;
 	cde.insert(make_pair(string("abc"), 4142342342342343));
 	cde.insert(make_pair(string("cde"), 5));
 	cde.insert(make_pair(string("def"), 11231233));
+	// , abc, vec, cde
 	t = make_tuple('a', 10, 0.333333333333333, abc, vec, cde);
-	std::cout << sizeof(cde) << std::endl;
 	msgpack::pack(t, dest);
 	cout << msgpack_byte::to_stringstream(dest).str() << endl;
 	cout << "Packed size: " << dest.size() << endl;*/
-	// std::cout << msgpack::iterate_tuple_types_2(t);
 	uint64_t total_bytes = 0;
 	msgpack_byte::container dest;
 	vector<tuple<char, vector<int>, int, string, double, map<int, vector<string> >, float > > test_vector(TEST_NUM);
@@ -143,7 +162,7 @@ int main() {
 	auto start_pack = chrono::high_resolution_clock::now();
 	msgpack::pack(test_vector, dest);
 	auto end_pack = chrono::high_resolution_clock::now();
-	std::cout << dest.size() << " bytes " << (double)(dest.size() / 1e6) << "MB packed size in " << double(chrono::duration_cast<chrono::seconds>(end_pack - start_pack).count()) << " seconds" << endl;
+	std::cout << dest.size() << " bytes " << (double)(dest.size() / 1e6) << "MB packed size in " << double(chrono::duration_cast<chrono::milliseconds>(end_pack - start_pack).count()) << " milliseconds" << endl;
 	std::cout << "Packing efficiency: " << (double)((double)dest.size() / (double)total_bytes) * (double)100 << "%" << std::endl;
 	dest.free_empty();
 	return 0;

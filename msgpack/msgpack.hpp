@@ -269,16 +269,16 @@ namespace msgpack {
 	// stl iterators
 
 	template<class F, class...Ts, std::size_t...Is>
-	void for_each_in_tuple(const std::tuple<Ts...>& tuple, F func, std::index_sequence<Is...>) {
+	void tuple_iterator_1(std::tuple<Ts...>& tuple, F func, std::index_sequence<Is...>, msgpack_byte::container& dest) {
 		using expander = int[];
 		(void)expander {
-			0, ((void)func(std::get<Is>(tuple)), 0)...
+			0, ((void)func(dest, std::get<Is>(tuple)), 0)...
 		};
 	}
 
 	template<class F, class...Ts>
-	void for_each_in_tuple(const std::tuple<Ts...>& tuple, F func) {
-		for_each_in_tuple(tuple, func, std::make_index_sequence<sizeof...(Ts)>());
+	void tuple_iterator_1(std::tuple<Ts...>& tuple, msgpack_byte::container& dest, F func) {
+		tuple_iterator_1(tuple, func, std::make_index_sequence<sizeof...(Ts)>(), dest);
 	}
 
 	template <typename T>
@@ -318,30 +318,29 @@ namespace msgpack {
 		return std::apply(sum_length, t);
 	}
 
-	template <size_t I = 0, typename... Ts>
-	typename std::enable_if<I == sizeof...(Ts), void>::type
-		iterate_tuple(std::tuple<Ts...> tup, msgpack_byte::container& dest) {
-		return;
+	template<class... Fs>
+	void do_in_order(Fs&&... fs) {
+		int unused[] = { 0, ((void)std::forward<Fs>(fs)(), 0)... };
+		(void)unused; // blocks warnings
 	}
 
-	template <size_t I = 0, typename... Ts>
-	typename  std::enable_if<(I < sizeof...(Ts)), void>::type
-		iterate_tuple(std::tuple<Ts...> tup, msgpack_byte::container& dest) {
-		if (std::is_integral<NthTypeOf<I, Ts...> >::value || std::is_same<std::string, NthTypeOf<I, Ts...> >::value) {
-			pack(std::get<I>(tup), dest);
-		}
-		else {
-			pack(std::get<I>(tup), dest);
-		}
-		iterate_tuple<I + 1>(tup, dest);
+	template<class T>
+	constexpr std::make_index_sequence<std::tuple_size<T>::value>
+		get_indexes(T const&)
+	{
+		return {};
 	}
 
-	template <typename Tup>
-	void iterate_tuple_new(const Tup& t, msgpack_byte::container& dest) {
-		auto test = [dest](const auto&... args) {
-			(pack(args, dest) + ...);
-		};
-		std::apply(test, t);
+	template<size_t... Is, class Tuple, class F>
+	void tuple_iterator_2(std::index_sequence<Is...>, Tuple&& tup, F&& f, msgpack_byte::container&& dest) {
+		using std::get;
+		do_in_order([&] { f(dest, get<Is>(std::forward<Tuple>(tup))); }...);
+	}
+
+	template<class Tuple, class F>
+	void tuple_iterator_2(Tuple&& tup, msgpack_byte::container& dest, F&& f) {
+		auto indexes = get_indexes(tup);
+		tuple_iterator_2(indexes, std::forward<Tuple>(tup), std::forward<F>(f), std::forward<msgpack_byte::container>(dest));
 	}
 
 	// packing functions - STL
@@ -386,7 +385,11 @@ namespace msgpack {
 			dest.push_back(uint8_t(arr32));
 			dest.push_back(uint32_t(n));
 		}
-		iterate_tuple(src, dest);
+		// iterate_tuple(src, dest);
+		
+		// msgpack::tuple_iterator_2(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest); });
+
+		msgpack::tuple_iterator_1(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest); });
 	}
 
 	template<typename T, typename S>
@@ -432,3 +435,27 @@ namespace msgpack {
 };
 
 #endif
+
+
+
+// ANCIENT STUFF
+
+/*template <size_t I = 0, typename... Ts>
+	typename std::enable_if<I == sizeof...(Ts), void>::type
+		iterate_tuple(std::tuple<Ts...> tup, msgpack_byte::container& dest) {
+		return;
+	}
+
+	template <size_t I = 0, typename... Ts>
+	typename  std::enable_if<(I < sizeof...(Ts)), void>::type
+		iterate_tuple(std::tuple<Ts...> tup, msgpack_byte::container& dest) {
+		std::cout << typeid(std::get<I>(tup)).name() << std::endl;
+		if (std::is_integral<NthTypeOf<I, Ts...> >::value || std::is_same<std::string, NthTypeOf<I, Ts...> >::value) {
+			pack(std::get<I>(tup), dest);
+		}
+		else {
+			pack(std::get<I>(tup), dest);
+		}
+		iterate_tuple<I + 1>(tup, dest);
+	}
+	*/
