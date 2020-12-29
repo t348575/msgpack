@@ -315,7 +315,7 @@ namespace msgpack_byte {
 		std::stringstream result;
 		if (hex) {
 			for (auto& e : element) {
-				result << hexify<uint32_t>(e) << " ";
+				result << hexify<uint32_t>(e);
 			}
 		}
 		return result;

@@ -7,11 +7,10 @@
 #include <sstream>
 
 #include "msgpack.hpp"
-#include "include/containers/byte.hpp"
 
 using namespace std;
 
-#define TEST_NUM 10
+#define TEST_NUM 100
 
 #define maxchar 255
 #define minchar 0
@@ -33,7 +32,7 @@ random_device rd;
 mt19937 character_mt(rd());
 uniform_int_distribution<uint32_t> character_pool(0, 255);
 mt19937 size_mt(rd());
-uniform_int_distribution<uint32_t> size_pool(0, 512);
+uniform_int_distribution<uint32_t> size_pool(0, 256);
 
 char get_char() {
 	if (current_char == maxchar) {
