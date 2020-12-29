@@ -13,7 +13,7 @@
 #define fix32 0X1F
 #define single_char 0xA1
 #define lenient_size 0x3E8
-#define compression_percent 1
+#define compression_percent 1.1
 
 #define ufixint 0x00
 #define fixmap 0x80

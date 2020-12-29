@@ -12,7 +12,29 @@
 #include "containers/byte.hpp"
 #include "formats.hpp"
 
-namespace msgpack {
+struct AllocationMetrics {
+	uint32_t TotalAllocated = 0;
+	uint32_t TotalFreed = 0;
+	uint32_t CurrentUsage() { return TotalAllocated - TotalFreed; }
+};
+
+static AllocationMetrics s_AllocationMetrics;
+
+void* operator new(size_t size) {
+	s_AllocationMetrics.TotalAllocated += size;
+	return malloc(size);
+}
+
+void operator delete(void* memory, size_t size) {
+	s_AllocationMetrics.TotalFreed += size;
+	free(memory);
+}
+
+namespace msgpack {	
+
+	void PrintCurrentUsage() {
+		std::cout << "Current usage: " << s_AllocationMetrics.CurrentUsage() << " Total Allocated: " << s_AllocationMetrics.TotalAllocated << " Total Freed: " << s_AllocationMetrics.TotalFreed << std::endl;
+	}
 
 	// some definitions
 
@@ -22,6 +44,19 @@ namespace msgpack {
 	void pack(std::tuple<T...>& src, msgpack_byte::container& dest, bool initial = true);
 	template<typename T, typename S>
 	void pack(std::map<T, S>& src, msgpack_byte::container& dest, bool initial = true);
+
+	template <typename Tup>
+	size_t iterate_tuple_types_2(const Tup& t);
+	template<typename A, typename B>
+	size_t LengthOf(const std::map<A, B>& s);
+	template <typename T>
+	size_t LengthOf(const std::vector<T>& s);
+	template <typename ...T>
+	size_t LengthOf(const std::tuple<T...>& s);
+	template <typename ... Params>
+	size_t LengthOf(const std::basic_string<Params...>& s);
+	template <typename T>
+	size_t LengthOf(const T&);
 
 	// utility
 
@@ -282,7 +317,7 @@ namespace msgpack {
 	}
 
 	template <typename T>
-		size_t LengthOf(const T&) {
+	size_t LengthOf(const T&) {
 		// std::cout << typeid(T).name() << "\t" << sizeof(T) << std::endl;
 		return sizeof(T);
 	}
@@ -293,10 +328,28 @@ namespace msgpack {
 		return s.length();
 	}
 
+	template <typename ...T>
+	size_t LengthOf(const std::tuple<T...>& s) {
+		auto sum_length = [](const auto&... args) {
+			// std::cout << typeid(args).name() << std::endl;
+			return (LengthOf(args) + ...);
+		};
+		return std::apply(sum_length, s);
+	}
+
 	template <typename T>
 	size_t LengthOf(const std::vector<T>& s) {
 		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
-		return s.size() * sizeof(T);
+		if (std::is_integral<T>::value) {
+			return s.size() * sizeof(T);
+		}
+		else {
+			size_t result = 0;
+			for (auto& e : s) {
+				result += LengthOf(e);
+			}
+			return result;
+		}
 	}
 
 	template<typename A, typename B>
@@ -318,7 +371,105 @@ namespace msgpack {
 		return std::apply(sum_length, t);
 	}
 
-	template<class... Fs>
+	// packing functions - STL
+
+	template <typename T>
+	void pack(std::vector<T>& src, msgpack_byte::container& dest, bool initial) {
+		size_t n = src.size();
+		if (initial) {
+			dest.check_resize(size_t((LengthOf(src) + 1) * compression_percent));
+		}
+		if (n <= 15) {
+			dest.push_back(fixarray_t(n));
+		}
+		else if (n <= umax16) {
+			dest.push_back(uint8_t(arr16));
+			dest.push_back(uint16_t(n));
+		}
+		else if (n <= umax32) {
+			dest.push_back(uint8_t(arr32));
+			dest.push_back(uint32_t(n));
+		}
+		for (uint32_t i = 0; i < n; i++) {
+			pack(src[i], dest, false);
+		}
+	}
+
+	template<typename ...T>
+	void pack(std::tuple<T...>& src, msgpack_byte::container& dest, bool initial) {
+		size_t n = std::tuple_size<typename std::remove_reference<decltype(src)>::type>::value;
+		if (initial) {
+			// std::cout << recursive_size(src) << "\t" << size_t(recursive_size(src) * compression_percent) << std::endl;
+			dest.check_resize(size_t((iterate_tuple_types_2(src) + 1) * compression_percent));
+		}
+		if (n <= 15) {
+			dest.push_back(fixarray_t(n));
+		}
+		else if (n <= umax16) {
+			dest.push_back(uint8_t(arr16));
+			dest.push_back(uint16_t(n));
+		}
+		else if (n <= umax32) {
+			dest.push_back(uint8_t(arr32));
+			dest.push_back(uint32_t(n));
+		}
+		// iterate_tuple(src, dest);
+		
+		// msgpack::tuple_iterator_2(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest); });
+
+		msgpack::tuple_iterator_1(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest, false); });
+	}
+
+	template<typename T, typename S>
+	void pack(std::map<T, S>& src, msgpack_byte::container& dest, bool initial) {
+		size_t n = src.size();
+		bool t_basic = true;
+		bool s_basic = false;
+		if (initial) {
+			dest.check_resize(size_t((LengthOf(src) + 1) * compression_percent));
+		}
+		if (n <= 15) {
+			dest.push_back(fixmap_t(n));
+		}
+		else if (n <= umax16) {
+			dest.push_back(uint8_t(map16));
+			dest.push_back(uint16_t(n));
+		}
+		else if (n <= umax32) {
+			dest.push_back(uint8_t(map32));
+			dest.push_back(uint32_t(n));
+		}
+		if (!(std::is_integral<T>::value || std::is_same<std::string, T>::value)) {
+			t_basic = false;
+		}
+		if (std::is_integral<T>::value || std::is_same<std::string, T>::value) {
+			s_basic = true;
+		}
+		for (auto e : src) {
+			if (t_basic) {
+				pack(e.first, dest, false);
+			}
+			else {
+				pack(e.first, dest, false);
+			}
+			if (s_basic) {
+				pack(e.second, dest, false);
+			}
+			else {
+				pack(e.second, dest, false);
+			}
+		}
+	}
+};
+
+#endif
+
+
+
+// ANCIENT STUFF
+
+/*
+template<class... Fs>
 	void do_in_order(Fs&&... fs) {
 		int unused[] = { 0, ((void)std::forward<Fs>(fs)(), 0)... };
 		(void)unused; // blocks warnings
@@ -342,105 +493,7 @@ namespace msgpack {
 		auto indexes = get_indexes(tup);
 		tuple_iterator_2(indexes, std::forward<Tuple>(tup), std::forward<F>(f), std::forward<msgpack_byte::container>(dest));
 	}
-
-	// packing functions - STL
-
-	template <typename T>
-	void pack(std::vector<T>& src, msgpack_byte::container& dest, bool initial) {
-		size_t n = src.size();
-		if (initial) {
-			dest.check_resize(size_t(src.size() * sizeof(T) * compression_percent));
-		}
-		if (n <= 15) {
-			dest.push_back(fixarray_t(n));
-		}
-		else if (n <= umax16) {
-			dest.push_back(uint8_t(arr16));
-			dest.push_back(uint16_t(n));
-		}
-		else if (n <= umax32) {
-			dest.push_back(uint8_t(arr32));
-			dest.push_back(uint32_t(n));
-		}
-		for (uint32_t i = 0; i < n; i++) {
-			pack(src[i], dest);
-		}
-	}
-
-	template<typename ...T>
-	void pack(std::tuple<T...>& src, msgpack_byte::container& dest, bool initial) {
-		size_t n = std::tuple_size<typename std::remove_reference<decltype(src)>::type>::value;
-		if (initial) {
-			// std::cout << recursive_size(src) << "\t" << size_t(recursive_size(src) * compression_percent) << std::endl;
-			dest.check_resize(size_t(iterate_tuple_types_2(src) * compression_percent));
-		}
-		if (n <= 15) {
-			dest.push_back(fixarray_t(n));
-		}
-		else if (n <= umax16) {
-			dest.push_back(uint8_t(arr16));
-			dest.push_back(uint16_t(n));
-		}
-		else if (n <= umax32) {
-			dest.push_back(uint8_t(arr32));
-			dest.push_back(uint32_t(n));
-		}
-		// iterate_tuple(src, dest);
-		
-		// msgpack::tuple_iterator_2(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest); });
-
-		msgpack::tuple_iterator_1(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest); });
-	}
-
-	template<typename T, typename S>
-	void pack(std::map<T, S>& src, msgpack_byte::container& dest, bool initial) {
-		size_t n = src.size();
-		bool t_basic = true;
-		bool s_basic = false;
-		if (initial) {
-			dest.check_resize(size_t(LengthOf(src) * compression_percent));
-		}
-		if (n <= 15) {
-			dest.push_back(fixmap_t(n));
-		}
-		else if (n <= umax16) {
-			dest.push_back(uint8_t(map16));
-			dest.push_back(uint16_t(n));
-		}
-		else if (n <= umax32) {
-			dest.push_back(uint8_t(map32));
-			dest.push_back(uint32_t(n));
-		}
-		if (!(std::is_integral<T>::value || std::is_same<std::string, T>::value)) {
-			t_basic = false;
-		}
-		if (std::is_integral<T>::value || std::is_same<std::string, T>::value) {
-			s_basic = true;
-		}
-		for (auto e : src) {
-			if (t_basic) {
-				pack(e.first, dest);
-			}
-			else {
-				pack(e.first, dest);
-			}
-			if (s_basic) {
-				pack(e.second, dest);
-			}
-			else {
-				pack(e.second, dest);
-			}
-		}
-	}
-};
-
-#endif
-
-
-
-// ANCIENT STUFF
-
-/*template <size_t I = 0, typename... Ts>
+template <size_t I = 0, typename... Ts>
 	typename std::enable_if<I == sizeof...(Ts), void>::type
 		iterate_tuple(std::tuple<Ts...> tup, msgpack_byte::container& dest) {
 		return;
