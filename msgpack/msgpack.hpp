@@ -17,11 +17,11 @@ namespace msgpack {
 	// some definitions
 
 	template<typename T>
-	void pack(std::vector<T> src, byte::container& dest, bool initial = true);
+	void pack(std::vector<T>& src, msgpack_byte::container& dest, bool initial = true);
 	template<typename ...T>
-	void pack(std::tuple<T...> src, byte::container& dest, bool initial = true);
+	void pack(std::tuple<T...>& src, msgpack_byte::container& dest, bool initial = true);
 	template<typename T, typename S>
-	void pack(std::map<T, S> src, byte::container& dest, bool initial = true);
+	void pack(std::map<T, S>& src, msgpack_byte::container& dest, bool initial = true);
 
 	// utility
 
@@ -69,11 +69,11 @@ namespace msgpack {
 
 	// string
 
-	void pack(const char src, byte::container& dest, bool initial = false) {
+	void pack(const char src, msgpack_byte::container& dest, bool initial = false) {
 		dest.push_back(uint8_t(single_char));
 		dest.push_back(src);
 	}
-	void pack(const char* src, size_t len, byte::container& dest, bool initial = false) {
+	void pack(const char* src, size_t len, msgpack_byte::container& dest, bool initial = false) {
 		uint32_t n = static_cast<uint32_t>(len);
 		if (n <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(n)));
@@ -95,7 +95,7 @@ namespace msgpack {
 		}
 		dest.push_back(src, n);
 	}
-	void pack(char* src, size_t len, byte::container& dest, bool initial = false) {
+	void pack(char* src, size_t len, msgpack_byte::container& dest, bool initial = false) {
 		uint32_t n = static_cast<uint32_t>(len);
 		if (n <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(n)));
@@ -117,7 +117,7 @@ namespace msgpack {
 		}
 		dest.push_back(src, n);
 	}
-	void pack(std::string src, byte::container& dest, bool initial = false) {
+	void pack(std::string src, msgpack_byte::container& dest, bool initial = false) {
 		uint32_t len = static_cast<uint32_t>(src.length());
 		if (len <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(len)));
@@ -144,7 +144,7 @@ namespace msgpack {
 
 	// unsigned int
 
-	void pack_uint(uint64_t src, byte::container& dest, bool initial = false) {
+	void pack_uint(uint64_t src, msgpack_byte::container& dest, bool initial = false) {
 		if (src <= umaxfixint) {
 			dest.push_back(uint8_t(ufixint_t<uint64_t>(src)));
 		}
@@ -171,7 +171,7 @@ namespace msgpack {
 
 	// signed int
 
-	void pack_int(int64_t src, byte::container& dest, bool initial = false) {
+	void pack_int(int64_t src, msgpack_byte::container& dest, bool initial = false) {
 		uint64_t cmp = src;
 		if (int64_t(cmp) < 0) {
 			cmp = int64_t(cmp) * -1;
@@ -200,34 +200,34 @@ namespace msgpack {
 		}
 	}
 
-	void pack(uint8_t src, byte::container& dest, bool initial = false) {
+	void pack(uint8_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint16_t src, byte::container& dest, bool initial = false) {
+	void pack(uint16_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint32_t src, byte::container& dest, bool initial = false) {
+	void pack(uint32_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint64_t src, byte::container& dest, bool initial = false) {
+	void pack(uint64_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(int8_t src, byte::container& dest, bool initial = false) {
+	void pack(int8_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int16_t src, byte::container& dest, bool initial = false) {
+	void pack(int16_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int32_t src, byte::container& dest, bool initial = false) {
+	void pack(int32_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int64_t src, byte::container& dest, bool initial = false) {
+	void pack(int64_t src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(src, dest);
 	}
 
 	// double
 
-	void pack(double src, byte::container& dest, bool initial = false) {
+	void pack(double src, msgpack_byte::container& dest, bool initial = false) {
 		float src_as_float = float(src);
 		double src_back_to_double = double(src_as_float);
 		if (src_back_to_double == src) {
@@ -244,14 +244,14 @@ namespace msgpack {
 
 	// float
 
-	void pack(float src, byte::container& dest, bool initial = false) {
+	void pack(float src, msgpack_byte::container& dest, bool initial = false) {
 		dest.push_back(uint8_t(float32));
 		dest.push_back(src);
 	}
 
 	// boolean
 
-	void pack(bool src, byte::container& dest, bool initial = false) {
+	void pack(bool src, msgpack_byte::container& dest, bool initial = false) {
 		if (src) {
 			dest.push_back(uint8_t(tru));
 		}
@@ -262,37 +262,95 @@ namespace msgpack {
 
 	// nil
 
-	void pack(byte::container& dest, bool initial = false) {
+	void pack(msgpack_byte::container& dest, bool initial = false) {
 		dest.push_back(uint8_t(nil));
 	}
 
 	// stl iterators
 
+	template<class F, class...Ts, std::size_t...Is>
+	void for_each_in_tuple(const std::tuple<Ts...>& tuple, F func, std::index_sequence<Is...>) {
+		using expander = int[];
+		(void)expander {
+			0, ((void)func(std::get<Is>(tuple)), 0)...
+		};
+	}
+
+	template<class F, class...Ts>
+	void for_each_in_tuple(const std::tuple<Ts...>& tuple, F func) {
+		for_each_in_tuple(tuple, func, std::make_index_sequence<sizeof...(Ts)>());
+	}
+
+	template <typename T>
+		size_t LengthOf(const T&) {
+		// std::cout << typeid(T).name() << "\t" << sizeof(T) << std::endl;
+		return sizeof(T);
+	}
+
+	template <typename ... Params>
+	size_t LengthOf(const std::basic_string<Params...>& s) {
+		// std::cout << typeid(s).name() << "\t" << s.length() << std::endl;
+		return s.length();
+	}
+
+	template <typename T>
+	size_t LengthOf(const std::vector<T>& s) {
+		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
+		return s.size() * sizeof(T);
+	}
+
+	template<typename A, typename B>
+	size_t LengthOf(const std::map<A, B>& s) {
+		size_t result = 0;
+		for (auto& e : s) {
+			result += LengthOf(e.first);
+			result += LengthOf(e.second);
+		}
+		return result;
+	}
+
+	template <typename Tup>
+	size_t iterate_tuple_types_2(const Tup& t) {
+		auto sum_length = [](const auto&... args) {
+			// std::cout << typeid(args).name() << std::endl;
+			return (LengthOf(args) + ...);
+		};
+		return std::apply(sum_length, t);
+	}
+
 	template <size_t I = 0, typename... Ts>
 	typename std::enable_if<I == sizeof...(Ts), void>::type
-		iterate_tuple(std::tuple<Ts...> tup, byte::container& dest) {
+		iterate_tuple(std::tuple<Ts...> tup, msgpack_byte::container& dest) {
 		return;
 	}
 
 	template <size_t I = 0, typename... Ts>
 	typename  std::enable_if<(I < sizeof...(Ts)), void>::type
-		iterate_tuple(std::tuple<Ts...> tup, byte::container& dest) {
+		iterate_tuple(std::tuple<Ts...> tup, msgpack_byte::container& dest) {
 		if (std::is_integral<NthTypeOf<I, Ts...> >::value || std::is_same<std::string, NthTypeOf<I, Ts...> >::value) {
 			pack(std::get<I>(tup), dest);
 		}
 		else {
-			pack(std::get<I>(tup), dest, false);
+			pack(std::get<I>(tup), dest);
 		}
 		iterate_tuple<I + 1>(tup, dest);
+	}
+
+	template <typename Tup>
+	void iterate_tuple_new(const Tup& t, msgpack_byte::container& dest) {
+		auto test = [dest](const auto&... args) {
+			(pack(args, dest) + ...);
+		};
+		std::apply(test, t);
 	}
 
 	// packing functions - STL
 
 	template <typename T>
-	void pack(std::vector<T> src, byte::container& dest, bool initial) {
+	void pack(std::vector<T>& src, msgpack_byte::container& dest, bool initial) {
 		size_t n = src.size();
 		if (initial) {
-			dest.check_resize(size_t(sizeof(src) * compression_percent));
+			dest.check_resize(size_t(src.size() * sizeof(T) * compression_percent));
 		}
 		if (n <= 15) {
 			dest.push_back(fixarray_t(n));
@@ -308,17 +366,14 @@ namespace msgpack {
 		for (uint32_t i = 0; i < n; i++) {
 			pack(src[i], dest);
 		}
-		if (initial) {
-			dest.free_empty();
-		}
 	}
 
 	template<typename ...T>
-	void pack(std::tuple<T...> src, byte::container& dest, bool initial) {
-		size_t n = std::tuple_size<decltype(src)>::value;
+	void pack(std::tuple<T...>& src, msgpack_byte::container& dest, bool initial) {
+		size_t n = std::tuple_size<typename std::remove_reference<decltype(src)>::type>::value;
 		if (initial) {
 			// std::cout << recursive_size(src) << "\t" << size_t(recursive_size(src) * compression_percent) << std::endl;
-			dest.check_resize(size_t(recursive_size(src) * compression_percent));
+			dest.check_resize(size_t(iterate_tuple_types_2(src) * compression_percent));
 		}
 		if (n <= 15) {
 			dest.push_back(fixarray_t(n));
@@ -332,18 +387,15 @@ namespace msgpack {
 			dest.push_back(uint32_t(n));
 		}
 		iterate_tuple(src, dest);
-		if (initial) {
-			dest.free_empty();
-		}
 	}
 
 	template<typename T, typename S>
-	void pack(std::map<T, S> src, byte::container& dest, bool initial) {
+	void pack(std::map<T, S>& src, msgpack_byte::container& dest, bool initial) {
 		size_t n = src.size();
 		bool t_basic = true;
 		bool s_basic = false;
 		if (initial) {
-			dest.check_resize(size_t(n * compression_percent));
+			dest.check_resize(size_t(LengthOf(src) * compression_percent));
 		}
 		if (n <= 15) {
 			dest.push_back(fixmap_t(n));
@@ -367,17 +419,14 @@ namespace msgpack {
 				pack(e.first, dest);
 			}
 			else {
-				pack(e.first, dest, false);
+				pack(e.first, dest);
 			}
 			if (s_basic) {
 				pack(e.second, dest);
 			}
 			else {
-				pack(e.second, dest, false);
+				pack(e.second, dest);
 			}
-		}
-		if (initial) {
-			dest.free_empty();
 		}
 	}
 };

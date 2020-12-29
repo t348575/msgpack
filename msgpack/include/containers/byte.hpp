@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iomanip>
 
-namespace byte {
+namespace msgpack_byte {
 
 	class container {
 
