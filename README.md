@@ -29,7 +29,7 @@ A simple C++17 (only) compatible msgpack implementation.
 - Write to streams instead of stringstream or string
 
 ### Current performance
-- ~ 2GB of randomly generated data (not fixed sized `vectors`, `maps` and `std::string`) packed in 6.56 seconds on an `i7-7700HQ`
+- ~ 2GB of randomly generated data (not fixed sized `vectors`, `maps`, `tuple` and `std::string`) packed in 6.56 seconds on an `i7-7700HQ`
 - Memory allocation could be much more optimized
 
 ### Instructions
