@@ -33,17 +33,25 @@ A simple C++17 (only) compatible msgpack implementation.
 2. Include msgpack.hpp
 
 ### Hello World
+Compile and run main.cpp to run a sample benchmark ~ 100 - 250 MB
 ```cpp
-msgpack_byte::container dest; // byte container holding the packed bytes
-tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t> > t; // an example container to pack
-vector<unsigned int> vec{ 1, 2, 3, 4, 5 };
-string abc = "test string";
-map<string, uint64_t> cde;
-cde.insert(make_pair(string("abc"), 4142342342342343));
-cde.insert(make_pair(string("cde"), 5));
-cde.insert(make_pair(string("def"), 11231233));
-t = make_tuple('a', 10, 0.333333333333333, abc, vec, cde);
-msgpack::pack(t, dest); // pass the container to be packed and the byte container
-cout << msgpack_byte::to_stringstream(dest).str() << endl; // return a stringstream of the packed data (in hex)
-cout << "Packed size: " << dest.size() << endl;
+#include <iostream>
+#include <tuple>
+#include <map>
+#include <vector>
+int main() {
+    msgpack_byte::container dest; // byte container holding the packed bytes
+    tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t> > t; // an example container to pack
+    vector<unsigned int> vec{ 1, 2, 3, 4, 5 };
+    string abc = "test string";
+    map<string, uint64_t> cde;
+    cde.insert(make_pair(string("abc"), 4142342342342343));
+    cde.insert(make_pair(string("cde"), 5));
+    cde.insert(make_pair(string("def"), 11231233));
+    t = make_tuple('a', 10, 0.333333333333333, abc, vec, cde);
+    msgpack::pack(t, dest); // pass the container to be packed and the byte container
+    std::cout << msgpack_byte::to_stringstream(dest).str() << std::endl; // return a stringstream of the packed data (in hex)
+    std::cout << "Packed size: " << dest.size() << std::endl;
+    return 0;
+}
 ```

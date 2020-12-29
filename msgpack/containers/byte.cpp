@@ -229,7 +229,7 @@ namespace msgpack_byte {
 
 	bool container::free_empty(bool lenient) {
 		if (lenient && s != c - 1 && c > lenient_size && c - lenient_size > s) {
-			std::cout << s << "\t" << c << "\t" << c - s << std::endl;
+			// std::cout << s << "\t" << c << "\t" << c - s << std::endl;
 			c = s + 1;
 			uint8_t* temp_arr = new uint8_t[c];
 			std::copy(data, data + s, temp_arr);

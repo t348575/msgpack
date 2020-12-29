@@ -115,9 +115,6 @@ int main() {
 	vector<tuple<char, vector<int>, int, string, double, map<int, vector<string> >, float > > test_vector(TEST_NUM);
 	auto start_gen = chrono::high_resolution_clock::now();
 	for (uint64_t i = 0; i < TEST_NUM; i++) {
-		if (i % 100 == 0) {
-			std::cout << i / 100 << "%" << std::endl;
-		}
 		uint32_t first_vec_size = size_pool(size_mt);
 		total_bytes += (first_vec_size * 4);
 		vector<int> first_vec(first_vec_size);
