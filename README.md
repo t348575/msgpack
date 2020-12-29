@@ -3,6 +3,11 @@ A simple C++17 (only) compatible msgpack implementation.
 
 ### Note: Still in development (only packing complete, unpacking still to be done)
 
+[msgpack.org](https://msgpack.org/) 
+[msgpack-c](https://github.com/msgpack/msgpack-c)
+[MessagePack](https://github.com/mneumann/MessagePack)
+[specification](https://github.com/msgpack/msgpack/blob/master/spec.md)
+
 ### Note 2: Packing memory optimization not very good, allocates ~100MB extra for some reason when trying to pack 200MB of randomly generated data (not a problem at smaller sizes)
 
 ### Data structures added so far:
