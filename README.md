@@ -39,6 +39,7 @@ Compile and run main.cpp to run a sample benchmark ~ 100 - 250 MB
 #include <tuple>
 #include <map>
 #include <vector>
+#include "msgpack.hpp"
 int main() {
     msgpack_byte::container dest; // byte container holding the packed bytes
     tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t> > t; // an example container to pack
