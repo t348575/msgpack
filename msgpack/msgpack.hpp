@@ -58,47 +58,6 @@ namespace msgpack {
 	template <typename T>
 	size_t LengthOf(const T&);
 
-	// utility
-
-	template <typename T, typename S>
-	struct is_string {
-		static const bool value = false;
-	};
-
-	template <class T, class Traits, class Alloc>
-	struct is_string<T, std::basic_string<T, Traits, Alloc> > {
-		static const bool value = true;
-	};
-
-	template<int N, typename... Ts> using NthTypeOf =
-		typename std::tuple_element<N, std::tuple<Ts...>>::type;
-
-	template <size_t I = 0, typename... Ts>
-	typename std::enable_if<I == sizeof...(Ts), size_t>::type
-		recursive_size(std::tuple<Ts...> tup) {
-		return 0;
-	}
-
-	template <size_t I = 0, typename... Ts>
-	typename  std::enable_if<(I < sizeof...(Ts)), size_t>::type
-		recursive_size(std::tuple<Ts...> tup) {
-		// std::cout << __PRETTY_FUNCTION__ << std::endl;
-		size_t result = 0;
-		// is_string<std::string, NthTypeOf<I, Ts...> >::value
-		// std::is_same<std::string, NthTypeOf<I, Ts...> >::value
-		// if (std::is_integral<NthTypeOf<I, Ts...> >::value || std::is_floating_point<NthTypeOf<I, Ts...> >::value) {
-			result += sizeof(NthTypeOf<I, Ts...>);
-		// }
-		/*else if (std::is_same<std::basic_string<char, struct std::char_traits<char>, class std::allocator<char> >, NthTypeOf<I, Ts...> >::value) {
-			typename std::tuple_element<I, std::tuple<Ts...> >::type test = std::get<I>(tup);
-			std::stringstream ss(test);
-			result += static_cast<size_t>(ss.str().length());
-		}
-		else {
-			std::cout << typeid(std::get<I>(tup)).name() << std::endl;
-		}*/
-		return result + recursive_size<I + 1>(tup);
-	}
 
 	// packing functions - primitive
 
@@ -469,6 +428,45 @@ namespace msgpack {
 // ANCIENT STUFF
 
 /*
+* template <typename T, typename S>
+	struct is_string {
+		static const bool value = false;
+	};
+
+	template <class T, class Traits, class Alloc>
+	struct is_string<T, std::basic_string<T, Traits, Alloc> > {
+		static const bool value = true;
+	};
+
+	template<int N, typename... Ts> using NthTypeOf =
+		typename std::tuple_element<N, std::tuple<Ts...>>::type;
+
+	template <size_t I = 0, typename... Ts>
+	typename std::enable_if<I == sizeof...(Ts), size_t>::type
+		recursive_size(std::tuple<Ts...> tup) {
+		return 0;
+	}
+
+	template <size_t I = 0, typename... Ts>
+	typename  std::enable_if<(I < sizeof...(Ts)), size_t>::type
+		recursive_size(std::tuple<Ts...> tup) {
+		// std::cout << __PRETTY_FUNCTION__ << std::endl;
+		size_t result = 0;
+		// is_string<std::string, NthTypeOf<I, Ts...> >::value
+		// std::is_same<std::string, NthTypeOf<I, Ts...> >::value
+		// if (std::is_integral<NthTypeOf<I, Ts...> >::value || std::is_floating_point<NthTypeOf<I, Ts...> >::value) {
+			result += sizeof(NthTypeOf<I, Ts...>);
+		// }
+		else if (std::is_same<std::basic_string<char, struct std::char_traits<char>, class std::allocator<char> >, NthTypeOf<I, Ts...> >::value) {
+			typename std::tuple_element<I, std::tuple<Ts...> >::type test = std::get<I>(tup);
+			std::stringstream ss(test);
+			result += static_cast<size_t>(ss.str().length());
+		}
+		else {
+			std::cout << typeid(std::get<I>(tup)).name() << std::endl;
+		}
+return result + recursive_size<I + 1>(tup);
+	}
 template<class... Fs>
 	void do_in_order(Fs&&... fs) {
 		int unused[] = { 0, ((void)std::forward<Fs>(fs)(), 0)... };
