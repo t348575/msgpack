@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define TEST_NUM 1000
+#define TEST_NUM 100
 
 #define maxchar 255
 #define minchar 0

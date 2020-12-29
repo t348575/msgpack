@@ -8,8 +8,6 @@ A simple C++17 (only) compatible msgpack implementation.
 - [MessagePack](https://github.com/mneumann/MessagePack)
 - [specification](https://github.com/msgpack/msgpack/blob/master/spec.md)
 
-### Note 2: Packing memory optimization not very good, allocates ~100MB extra for some reason when trying to pack 200MB of randomly generated data (not a problem at smaller sizes)
-
 ### Data structures added so far:
 - vector
 - map
@@ -18,8 +16,6 @@ A simple C++17 (only) compatible msgpack implementation.
     - All integers (int8, int16, int32, int64) signed and unsigned
     - Float, Double
     - String (char *, std::string)
-
-
 
 ### Data structures to be added
 - list
@@ -32,6 +28,9 @@ A simple C++17 (only) compatible msgpack implementation.
 - Iterable in memory msgpack (ie. stored as msgpack but iterable)
 - Write to streams instead of stringstream or string
 
+### Current performance
+- ~ 2GB of randomly generated data (not fixed sized `vectors`, `maps` and `std::string`) packed in 6.56 seconds on an `i7-7700HQ`
+- Memory allocation could be much more optimized
 
 ### Instructions
 1. Copy msgpack.hpp, formats.hpp, and the containers folder
@@ -62,3 +61,9 @@ int main() {
     return 0;
 }
 ```
+
+### Compile time defines
+Compile with different #define values to change performance
+- `#define lenient_size` an integer value after which garbage collection trims extra memory for `msgpack_byte::container` default `1000`
+- `#define compression_percent` a float value to with which memory preallocation is adjust (to accomodate msgpack's formatting) default `1.1`
+- `#define doubling_strategy` define this without value to opt for doubling of byte container instead of growing by factor of `1.1`
