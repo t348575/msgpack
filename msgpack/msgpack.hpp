@@ -30,7 +30,7 @@ void operator delete(void* memory, size_t size) {
 	free(memory);
 }
 
-namespace msgpack {	
+namespace msgpack {
 
 	void PrintCurrentUsage() {
 		std::cout << "Current usage: " << s_AllocationMetrics.CurrentUsage() << " Total Allocated: " << s_AllocationMetrics.TotalAllocated << " Total Freed: " << s_AllocationMetrics.TotalFreed << std::endl;
@@ -111,7 +111,7 @@ namespace msgpack {
 		}
 		dest.push_back(src, n);
 	}
-	void pack(std::string src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(std::string& src, msgpack_byte::container& dest, bool initial = false) {
 		uint32_t len = static_cast<uint32_t>(src.length());
 		if (len <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(len)));
@@ -138,7 +138,7 @@ namespace msgpack {
 
 	// unsigned int
 
-	void pack_uint(uint64_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack_uint(const uint64_t& src, msgpack_byte::container& dest, bool initial = false) {
 		if (src <= umaxfixint) {
 			dest.push_back(uint8_t(ufixint_t<uint64_t>(src)));
 		}
@@ -165,7 +165,7 @@ namespace msgpack {
 
 	// signed int
 
-	void pack_int(int64_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack_int(const int64_t& src, msgpack_byte::container& dest, bool initial = false) {
 		uint64_t cmp = src;
 		if (int64_t(cmp) < 0) {
 			cmp = int64_t(cmp) * -1;
@@ -194,34 +194,34 @@ namespace msgpack {
 		}
 	}
 
-	void pack(uint8_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(uint8_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint16_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(uint16_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint32_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(uint32_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint64_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(uint64_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(int8_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(int8_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int16_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(int16_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int32_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(int32_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int64_t src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(int64_t& src, msgpack_byte::container& dest, bool initial = false) {
 		pack_int(src, dest);
 	}
 
 	// double
 
-	void pack(double src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(double& src, msgpack_byte::container& dest, bool initial = false) {
 		float src_as_float = float(src);
 		double src_back_to_double = double(src_as_float);
 		if (src_back_to_double == src) {
@@ -238,14 +238,14 @@ namespace msgpack {
 
 	// float
 
-	void pack(float src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(float& src, msgpack_byte::container& dest, bool initial = false) {
 		dest.push_back(uint8_t(float32));
 		dest.push_back(src);
 	}
 
 	// boolean
 
-	void pack(bool src, msgpack_byte::container& dest, bool initial = false) {
+	void pack(bool& src, msgpack_byte::container& dest, bool initial = false) {
 		if (src) {
 			dest.push_back(uint8_t(tru));
 		}
@@ -352,6 +352,9 @@ namespace msgpack {
 		for (uint32_t i = 0; i < n; i++) {
 			pack(src[i], dest, false);
 		}
+		if (initial) {
+			dest.free_empty();
+		}
 	}
 
 	template<typename ...T>
@@ -373,10 +376,13 @@ namespace msgpack {
 			dest.push_back(uint32_t(n));
 		}
 		// iterate_tuple(src, dest);
-		
+
 		// msgpack::tuple_iterator_2(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest); });
 
 		msgpack::tuple_iterator_1(src, dest, [](msgpack_byte::container& dest, auto& x) { pack(x, dest, false); });
+		if (initial) {
+			dest.free_empty();
+		}
 	}
 
 	template<typename T, typename S>
@@ -417,6 +423,9 @@ namespace msgpack {
 			else {
 				pack(e.second, dest, false);
 			}
+		}
+		if (initial) {
+			dest.free_empty();
 		}
 	}
 };

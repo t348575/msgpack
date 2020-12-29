@@ -80,7 +80,7 @@ string get_string() {
 }
 
 int main() {
-	string z;	
+	string z;
 	/*double runs[100];
 	double sum = 0;
 	for (int j = 0; j < 100; j++) {
@@ -98,7 +98,7 @@ int main() {
 	}
 	cout << "Average time: " << (double)(sum / 100) << endl;*/
 	/*msgpack_byte::container dest;
-	// tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t; 
+	// tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
 	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
 	vector<unsigned int> vec{ 1, 2, 3, 4, 5 };
 	string abc = "test string";
@@ -149,6 +149,5 @@ int main() {
 	std::cout << dest.size() << " bytes " << (double)(dest.size() / 1e6) << "MB packed size in " << double(chrono::duration_cast<chrono::milliseconds>(end_pack - start_pack).count()) << " milliseconds" << endl;
 	std::cout << "Packing efficiency: " << (double)((double)dest.size() / (double)total_bytes) * (double)100 << "%" << std::endl;
 	msgpack::PrintCurrentUsage();
-	dest.free_empty();
 	return 0;
 }

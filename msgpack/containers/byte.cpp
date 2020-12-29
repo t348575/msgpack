@@ -252,11 +252,11 @@ namespace msgpack_byte {
 
 	void container::check_expand() {
 		if (s == c) {
-			#ifdef doubling_strategy
+#ifdef doubling_strategy
 			c = c * 2;
-			#else
+#else
 			c = size_t(c * 1.1);
-			#endif
+#endif
 			uint8_t* temp_arr = new uint8_t[c];
 			std::copy(data, data + s, temp_arr);
 			delete[] data;
@@ -325,7 +325,7 @@ namespace msgpack_byte {
 		else {
 			for (auto& e : element) {
 				result << e;
-			}			
+			}
 		}
 		return result;
 	}
