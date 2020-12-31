@@ -150,6 +150,7 @@
     <ClInclude Include="containers\byte.hpp" />
     <ClInclude Include="formats.hpp" />
     <ClInclude Include="msgpack.hpp" />
+    <ClInclude Include="VisualProfiler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="containers\byte.cpp" />

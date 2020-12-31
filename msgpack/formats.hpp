@@ -1,19 +1,23 @@
 #include <cstdint>
 
-#define umaxfixint 0x7F
 #define umax8 0xFF
 #define umax16 0xFFFF
 #define umax32 0XFFFFFFFF
 #define umax64 0xFFFFFFFFFFFFFFFF
-#define maxfixint 0x20
-#define max8 0x80
-#define max16 0x8000
-#define max32 0x80000000
-#define max64 0x8000000000000000
+#define negmax8 0x80
+#define negmax16 0x8000
+#define negmax32 0x80000000
+#define negmax64 0x8000000000000000
+#define posmax8 0x7F
+#define posmax16 0x7FFF
+#define posmax32 0x7FFFFFFF
+#define posmax64 0x7FFFFFFFFFFFFFFF
 #define fix32 0X1F
+#define neg32 0xE0
 #define single_char 0xA1
 #define lenient_size 0x3E8
 #define compression_percent 1.1
+#define expansion_percent 0.9
 
 #define ufixint 0x00
 #define fixmap 0x80
@@ -52,14 +56,12 @@
 #define map32 0xDF
 #define fixint 0xFF
 
-template<typename T>
-static inline uint8_t ufixint_t(T n) {
+static inline uint8_t ufixint_t(uint8_t n) {
 	return uint8_t(n);
 }
 
-template<typename T>
-static inline uint8_t fixint_t(T n) {
-	return uint8_t(fixint - n + 1);
+static inline uint8_t fixint_t(int8_t n) {
+	return uint8_t(n);
 }
 
 static inline uint8_t fixmap_t(size_t n) {
@@ -69,6 +71,11 @@ static inline uint8_t fixmap_t(size_t n) {
 static inline uint8_t fixarray_t(size_t n) {
 	return uint8_t(fixarray + n);
 }
+
 static inline uint8_t fixstr_t(size_t n) {
 	return uint8_t(fixstr + n);
+}
+
+static inline bool is_array(uint8_t) {
+	return 0;
 }

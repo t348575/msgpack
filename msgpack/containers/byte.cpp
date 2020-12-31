@@ -6,8 +6,17 @@
 
 #include "byte.hpp"
 #include "../formats.hpp"
+#include "../VisualProfiler.h"
 
 namespace msgpack_byte {
+	#define PROFILING 1
+	#ifdef PROFILING
+	#define PROFILE_SCOPE(name) VisualProfilerTimer timer##__LINE__(name)
+	#define PROFILE_FUNCTION()  PROFILE_SCOPE(__FUNCSIG__)
+	#else
+	#define PROFILE_SCOPE(name)
+	#define PROFILE_FUNCTION()
+	#endif
 
 	// constructors
 
@@ -194,7 +203,7 @@ namespace msgpack_byte {
 		s += len;
 	}
 
-	void container::push_back(std::string& src, uint32_t len) {
+	void container::push_back(const std::string& src, uint32_t len) {
 		if (len == 0) {
 			len = src.length();
 		}
@@ -203,6 +212,17 @@ namespace msgpack_byte {
 			data[s + i] = src[i];
 		}
 		s += len;
+	}
+
+	// read header
+
+	uint8_t container::get_header(const uint64_t& pos) {
+		if (pos <= s) {
+			return data[pos + 1];
+		}
+		else {
+			throw std::out_of_range(std::to_string(pos) + " out of range!");
+		}
 	}
 
 	// utility

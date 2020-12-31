@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "msgpack.hpp"
+#include "VisualProfiler.h"
 
 using namespace std;
 
@@ -97,9 +98,12 @@ int main() {
 		sum += runs[i];
 	}
 	cout << "Average time: " << (double)(sum / 100) << endl;*/
-	/*msgpack_byte::container dest;
+	VisualProfiler::Instance().beginSession("test1");
+	msgpack_byte::container dest;
+	int e = -135;
+	msgpack::pack(e, dest);
 	// tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
-	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
+	/*tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
 	vector<unsigned int> vec{ 1, 2, 3, 4, 5 };
 	string abc = "test string";
 	map<string, uint64_t> cde;
@@ -108,12 +112,12 @@ int main() {
 	cde.insert(make_pair(string("def"), 11231233));
 	// , abc, vec, cde
 	t = make_tuple('a', 10, 0.333333333333333, abc, vec, cde);
-	msgpack::pack(t, dest);
+	msgpack::pack(t, dest);*/
 	cout << msgpack_byte::to_stringstream(dest).str() << endl;
 	cout << "Packed size: " << dest.size() << endl;
 	msgpack::PrintCurrentUsage();
-	dest.free_empty();*/
-	uint64_t total_bytes = 0;
+	VisualProfiler::Instance().endSession();
+	/*uint64_t total_bytes = 0;
 	msgpack_byte::container dest;
 	vector<tuple<char, vector<int>, int, string, double, map<int, vector<string> >, float > > test_vector(TEST_NUM);
 	auto start_gen = chrono::high_resolution_clock::now();
@@ -148,6 +152,6 @@ int main() {
 	auto end_pack = chrono::high_resolution_clock::now();
 	std::cout << dest.size() << " bytes " << (double)(dest.size() / 1e6) << "MB packed size in " << double(chrono::duration_cast<chrono::milliseconds>(end_pack - start_pack).count()) << " milliseconds" << endl;
 	std::cout << "Packing efficiency: " << (double)((double)dest.size() / (double)total_bytes) * (double)100 << "%" << std::endl;
-	msgpack::PrintCurrentUsage();
+	msgpack::PrintCurrentUsage();*/
 	return 0;
 }

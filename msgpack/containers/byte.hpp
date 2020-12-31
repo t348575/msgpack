@@ -40,7 +40,29 @@ namespace msgpack_byte {
 		void push_back(char value);
 		void push_back(const char* src, uint32_t len);
 		void push_back(char* src, uint32_t len);
-		void push_back(std::string& src, uint32_t len = 0);
+		void push_back(const std::string& src, uint32_t len = 0);
+
+		// read header
+
+		uint8_t get_header(const uint64_t& pos);
+
+		/*
+		void read(const uint8_t value);
+		void read(const uint8_t* value);
+		void read(const uint16_t value);
+		void read(const uint16_t* value);
+		void read(const uint32_t value);
+		void read(const uint32_t* value);
+		void read(const uint64_t value);
+		void read(const uint64_t* value);
+		void read(const float value);
+		void read(const float* value);
+		void read(const double value);
+		void read(const double* value);
+		void read(const char value);
+		void read(const const char* src, uint32_t len);
+		void read(const char* src, uint32_t len);
+		void read(const std::string& src, uint32_t len = 0);*/
 
 		// utility
 
