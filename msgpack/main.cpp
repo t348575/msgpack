@@ -100,11 +100,11 @@ int main() {
 	cout << "Average time: " << (double)(sum / 100) << endl;*/
 	VisualProfiler::Instance().beginSession("test1");
 	msgpack_byte::container dest;
-	int e = -135;
-	msgpack::pack(e, dest);
 	// tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
-	/*tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
-	vector<unsigned int> vec{ 1, 2, 3, 4, 5 };
+	vector<int> unpacked_data;
+	tuple <char, unsigned int, double, string, vector<int>, map<string, uint64_t>> t;
+	vector<int> vec;
+	vec.assign(33, 4);
 	string abc = "test string";
 	map<string, uint64_t> cde;
 	cde.insert(make_pair(string("abc"), 4142342342342343));
@@ -112,10 +112,12 @@ int main() {
 	cde.insert(make_pair(string("def"), 11231233));
 	// , abc, vec, cde
 	t = make_tuple('a', 10, 0.333333333333333, abc, vec, cde);
-	msgpack::pack(t, dest);*/
+	msgpack::pack(vec, dest);
 	cout << msgpack_byte::to_stringstream(dest).str() << endl;
 	cout << "Packed size: " << dest.size() << endl;
 	msgpack::PrintCurrentUsage();
+	msgpack::unpack(unpacked_data, dest);
+	msgpack_byte::container::Iterator it = dest.begin();
 	VisualProfiler::Instance().endSession();
 	/*uint64_t total_bytes = 0;
 	msgpack_byte::container dest;

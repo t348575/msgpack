@@ -58,8 +58,9 @@ namespace msgpack {
 	void pack(std::map<T, S>& src, container& dest, bool initial = true);
 
 	template<typename T>
-	void unpack(std::vector<T>& dest, container& src, bool initial = true);
-
+	void unpack(std::vector<T>& dest, container& src);
+	template<typename T>
+	void unpack(std::vector<T>& dest, container& src, container::Iterator it);
 	template <typename Tup>
 	size_t iterate_tuple_types_2(const Tup& t);
 	template<typename A, typename B>
@@ -75,7 +76,60 @@ namespace msgpack {
 
 	// utility
 
-	
+	size_t element_size(container& ele, container::Iterator& it) {
+		uint8_t header = *it;
+		if (header >= 0 && header <= posmax8) {
+			return 0;
+		}
+		else if (header >= fixmap && header < fixarray) {
+			return header - uint8_t(fixmap);
+		}
+		else if (header >= fixarray && header < fixstr) {
+			return header - uint8_t(fixarray);
+		}
+		else if (header >= fixstr && header < nil) {
+			return header - uint8_t(fixstr);
+		}
+		switch (header) {
+		case tru:
+		case flse:
+		case nil: {
+			return 0;
+		}
+		case int8:
+		case uint8: {
+			return 1;
+		}
+		case int16:
+		case uint16: {
+			return 2;
+		}
+		case float32:
+		case int32:
+		case uint32: {
+			return 4;
+		}
+		case float64:
+		case int64:
+		case uint64: {
+			return 8;
+		}
+		case str8: {
+			return ele.read_byte(it + 1);
+		}
+		case map16:
+		case arr16:
+		case str16: {
+			return ele.read_word(it + 1);
+		}
+		case arr32:
+		case map32:
+		case str32: {
+			return ele.read_d_word(it + 1);
+		}
+		}
+		return 0;
+	}
 
 	// packing functions - primitive
 
@@ -363,7 +417,7 @@ namespace msgpack {
 			pack(src[i], dest, false);
 		}
 		if (initial) {
-			dest.free_empty();
+			dest.shrink_to_fit();
 		}
 	}
 
@@ -392,7 +446,7 @@ namespace msgpack {
 
 		msgpack::tuple_iterator_1(src, dest, [](container& dest, auto& x) { pack(x, dest, false); });
 		if (initial) {
-			dest.free_empty();
+			dest.shrink_to_fit();
 		}
 	}
 
@@ -437,15 +491,30 @@ namespace msgpack {
 			}
 		}
 		if (initial) {
-			dest.free_empty();
+			dest.shrink_to_fit();
 		}
 	}
 
 	// unpacking
 
+	void unpack(int32_t& dest, container& src, container::Iterator& it) {
+		dest = src.read_d_word(it);
+	}
+
 	template<typename T>
-	void unpack(std::vector<T>& dest, container& src, bool initial) {
-		
+	void unpack(std::vector<T>& dest, container& src, container::Iterator it) {
+		static_assert(!std::is_same<void, T>::value);
+		size_t n = element_size(src, it);
+		dest.resize(n);
+		for (uint64_t i = 0; i < n; i++) {
+			T temp;
+			unpack(temp, src, it);
+		}
+	}
+
+	template<typename T>
+	void unpack(std::vector<T>& dest, container& src) {
+		unpack<T>(dest, src, src.begin());
 	}
 
 };

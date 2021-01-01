@@ -42,10 +42,6 @@ namespace msgpack_byte {
 		void push_back(char* src, uint32_t len);
 		void push_back(const std::string& src, uint32_t len = 0);
 
-		// read header
-
-		uint8_t get_header(const uint64_t& pos);
-
 		/*
 		void read(const uint8_t value);
 		void read(const uint8_t* value);
@@ -70,7 +66,7 @@ namespace msgpack_byte {
 		size_t size() const;
 		size_t capacity() const;
 		void resize(size_t reserve);
-		bool free_empty(bool lenient = true);
+		bool shrink_to_fit(bool lenient = true);
 
 		// internal
 
@@ -82,11 +78,9 @@ namespace msgpack_byte {
 
 		class Iterator {
 
-		private:
+		public:
 
 			uint8_t* ptr;
-
-		public:
 
 			using iterator_category = std::forward_iterator_tag;
 			using difference_type = std::ptrdiff_t;
@@ -99,6 +93,8 @@ namespace msgpack_byte {
 			pointer operator->();
 			Iterator& operator++();
 			Iterator operator++(int);
+			Iterator& operator+=(int const& lhs);
+			Iterator operator+(int const& lhs);
 			friend bool operator== (const Iterator& a, const Iterator& b);
 			friend bool operator!= (const Iterator& a, const Iterator& b);
 
@@ -106,6 +102,14 @@ namespace msgpack_byte {
 
 		Iterator begin() const;
 		Iterator end() const;
+
+		// reading
+
+		uint8_t get_header(Iterator it);
+		uint8_t read_byte(Iterator it);
+		uint16_t read_word(Iterator it);
+		uint32_t read_d_word(Iterator it);
+		uint64_t read_q_word(Iterator it);
 
 	private:
 

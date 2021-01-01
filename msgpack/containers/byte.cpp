@@ -3,6 +3,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <bitset>
 
 #include "byte.hpp"
 #include "../formats.hpp"
@@ -214,15 +215,44 @@ namespace msgpack_byte {
 		s += len;
 	}
 
-	// read header
+	// reading
 
-	uint8_t container::get_header(const uint64_t& pos) {
-		if (pos <= s) {
-			return data[pos + 1];
+	uint8_t container::get_header(Iterator it) {
+		if ((it + 1) != end()) {
+			return *(it + 1);
 		}
 		else {
-			throw std::out_of_range(std::to_string(pos) + " out of range!");
+			throw std::out_of_range("out of range!");
 		}
+	}
+	uint8_t container::read_byte(Iterator it) {
+		return *(it + 1);
+	}
+	uint16_t container::read_word(Iterator it) {
+		uint16_t output = 0;
+		*((uint8_t*)(&output) + 0) = *(it + 1);
+		*((uint8_t*)(&output) + 1) = *(it + 0);
+		return output;
+	}
+	uint32_t container::read_d_word(Iterator it) {
+		uint32_t output;
+		*((uint8_t*)(&output) + 0) = *(it + 3);
+		*((uint8_t*)(&output) + 1) = *(it + 2);
+		*((uint8_t*)(&output) + 2) = *(it + 1);
+		*((uint8_t*)(&output) + 3) = *(it + 0);
+		return output;
+	}
+	uint64_t container::read_q_word(Iterator it) {
+		uint64_t output;
+		*((uint8_t*)(&output) + 0) = *(it + 7);
+		*((uint8_t*)(&output) + 1) = *(it + 6);
+		*((uint8_t*)(&output) + 2) = *(it + 5);
+		*((uint8_t*)(&output) + 3) = *(it + 4);
+		*((uint8_t*)(&output) + 4) = *(it + 3);
+		*((uint8_t*)(&output) + 5) = *(it + 2);
+		*((uint8_t*)(&output) + 6) = *(it + 1);
+		*((uint8_t*)(&output) + 7) = *(it + 0);
+		return output;
 	}
 
 	// utility
@@ -247,7 +277,7 @@ namespace msgpack_byte {
 		data = temp_arr;
 	}
 
-	bool container::free_empty(bool lenient) {
+	bool container::shrink_to_fit(bool lenient) {
 		if (lenient && s != c - 1 && c > lenient_size && c - lenient_size > s) {
 			std::cout << s << "\t" << c << "\t" << c - s << std::endl;
 			c = s + 1;
@@ -314,7 +344,17 @@ namespace msgpack_byte {
 
 	container::Iterator container::Iterator::operator++(int) {
 		Iterator tmp = *this;
-		++(*this); return tmp;
+		++(*this);
+		return tmp;
+	}
+
+	container::Iterator& container::Iterator::operator+=(int const& lhs) {
+		this->ptr += lhs;
+		return *this;
+	}
+
+	container::Iterator container::Iterator::operator+(int const& lhs) {
+		return this->ptr + lhs;
 	}
 
 	bool operator== (const container::Iterator& a, const container::Iterator& b) {
