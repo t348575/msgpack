@@ -30,7 +30,7 @@ A simple C++17 (only) compatible msgpack implementation.
 
 ### Current performance
 - ~ 2GB of randomly generated data (not fixed sized `vectors`, `maps`, `tuple` and `std::string`) packed in 6.56 seconds on an `i7-7700HQ`
-- Memory allocation could be much more optimized
+- Memory allocation could be better optimized
 
 ### Instructions
 1. Copy msgpack.hpp, formats.hpp, and the containers folder
