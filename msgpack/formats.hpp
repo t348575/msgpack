@@ -23,6 +23,7 @@
 #define fixmap 0x80
 #define fixarray 0x90
 #define fixstr 0xA0
+#define fixstr_end 0XBF
 #define nil 0xC0
 #define flse 0xC2
 #define tru 0xC3
@@ -74,6 +75,10 @@ static inline uint8_t fixarray_t(size_t n) {
 
 static inline uint8_t fixstr_t(size_t n) {
 	return uint8_t(fixstr + n);
+}
+
+static inline uint8_t fixstr_len(uint8_t n) {
+	return uint8_t(n - fixstr);
 }
 
 static inline bool is_array(uint8_t) {

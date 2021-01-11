@@ -217,43 +217,26 @@ namespace msgpack_byte {
 
 	// reading
 
-	uint8_t container::get_header(Iterator it) {
-		if ((it + 1) != end()) {
-			return *(it + 1);
+	uint8_t container::get_header(uint64_t& pos) {
+		Iterator it = Iterator(data + pos);
+		if (it != end()) {
+			return data[pos++];
 		}
 		else {
 			throw std::out_of_range("out of range!");
 		}
 	}
-	uint8_t container::read_byte(Iterator it) {
-		return *(it + 1);
+	uint8_t container::read_byte(uint64_t& pos) {
+		return data[pos++];
 	}
-	uint16_t container::read_word(Iterator it) {
+	uint16_t container::read_word(uint64_t& pos) {
 		uint16_t output = 0;
-		*((uint8_t*)(&output) + 0) = *(it + 1);
-		*((uint8_t*)(&output) + 1) = *(it + 0);
+		*((uint8_t*)(&output)) = data[pos + 1];
+		*((uint8_t*)(&output) + 1) = data[pos];
+		pos += 2;
 		return output;
 	}
-	uint32_t container::read_d_word(Iterator it) {
-		uint32_t output;
-		*((uint8_t*)(&output) + 0) = *(it + 3);
-		*((uint8_t*)(&output) + 1) = *(it + 2);
-		*((uint8_t*)(&output) + 2) = *(it + 1);
-		*((uint8_t*)(&output) + 3) = *(it + 0);
-		return output;
-	}
-	uint64_t container::read_q_word(Iterator it) {
-		uint64_t output;
-		*((uint8_t*)(&output) + 0) = *(it + 7);
-		*((uint8_t*)(&output) + 1) = *(it + 6);
-		*((uint8_t*)(&output) + 2) = *(it + 5);
-		*((uint8_t*)(&output) + 3) = *(it + 4);
-		*((uint8_t*)(&output) + 4) = *(it + 3);
-		*((uint8_t*)(&output) + 5) = *(it + 2);
-		*((uint8_t*)(&output) + 6) = *(it + 1);
-		*((uint8_t*)(&output) + 7) = *(it + 0);
-		return output;
-	}
+	// remaining reads in byte.hpp
 
 	// utility
 
@@ -296,6 +279,14 @@ namespace msgpack_byte {
 			return true;
 		}
 		return false;
+	}
+
+	uint8_t * container::raw_pointer() {
+		return data;
+	}
+	
+	uint8_t * container::raw_pointer(uint64_t pos) {
+		return data + pos;
 	}
 
 	// internal
@@ -372,6 +363,8 @@ namespace msgpack_byte {
 	container::Iterator container::end() const {
 		return Iterator(&data[s]);
 	}
+
+	// iterator 2
 
 	// msgpack_byte as stringstream
 

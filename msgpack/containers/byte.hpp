@@ -42,23 +42,7 @@ namespace msgpack_byte {
 		void push_back(char* src, uint32_t len);
 		void push_back(const std::string& src, uint32_t len = 0);
 
-		/*
-		void read(const uint8_t value);
-		void read(const uint8_t* value);
-		void read(const uint16_t value);
-		void read(const uint16_t* value);
-		void read(const uint32_t value);
-		void read(const uint32_t* value);
-		void read(const uint64_t value);
-		void read(const uint64_t* value);
-		void read(const float value);
-		void read(const float* value);
-		void read(const double value);
-		void read(const double* value);
-		void read(const char value);
-		void read(const const char* src, uint32_t len);
-		void read(const char* src, uint32_t len);
-		void read(const std::string& src, uint32_t len = 0);*/
+		
 
 		// utility
 
@@ -67,6 +51,9 @@ namespace msgpack_byte {
 		size_t capacity() const;
 		void resize(size_t reserve);
 		bool shrink_to_fit(bool lenient = true);
+
+		uint8_t* raw_pointer();
+		uint8_t* raw_pointer(uint64_t pos);
 
 		// internal
 
@@ -88,7 +75,7 @@ namespace msgpack_byte {
 			using pointer = uint8_t*;
 			using reference = uint8_t&;
 
-			Iterator(pointer m_ptr) : ptr(m_ptr) {}
+			Iterator(pointer m_ptr) : ptr(m_ptr) { }
 			reference operator*() const;
 			pointer operator->();
 			Iterator& operator++();
@@ -99,17 +86,40 @@ namespace msgpack_byte {
 			friend bool operator!= (const Iterator& a, const Iterator& b);
 
 		};
-
+		
 		Iterator begin() const;
 		Iterator end() const;
 
 		// reading
 
-		uint8_t get_header(Iterator it);
-		uint8_t read_byte(Iterator it);
-		uint16_t read_word(Iterator it);
-		uint32_t read_d_word(Iterator it);
-		uint64_t read_q_word(Iterator it);
+		uint8_t get_header(uint64_t& pos);
+		uint8_t read_byte(uint64_t& pos);
+		uint16_t read_word(uint64_t& pos);
+
+		template<typename T = uint32_t>
+		T read_d_word(uint64_t& pos) {
+			T output;
+			*((uint8_t*)(&output)) = data[pos + 3];
+			*((uint8_t*)(&output) + 1) = data[pos + 2];
+			*((uint8_t*)(&output) + 2) = data[pos + 1];
+			*((uint8_t*)(&output) + 3) = data[pos];
+			pos += 4;
+			return output;
+		}
+		template<typename T = uint64_t>
+		T read_q_word(uint64_t& pos) {
+			T output;
+			*((uint8_t*)(&output)) = data[pos + 7];
+			*((uint8_t*)(&output) + 1) = data[pos + 6];
+			*((uint8_t*)(&output) + 2) = data[pos + 5];
+			*((uint8_t*)(&output) + 3) = data[pos + 4];
+			*((uint8_t*)(&output) + 4) = data[pos + 3];
+			*((uint8_t*)(&output) + 5) = data[pos + 2];
+			*((uint8_t*)(&output) + 6) = data[pos + 1];
+			*((uint8_t*)(&output) + 7) = data[pos];
+			pos += 8;
+			return output;
+		}
 
 	private:
 

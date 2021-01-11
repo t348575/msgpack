@@ -100,24 +100,38 @@ int main() {
 	cout << "Average time: " << (double)(sum / 100) << endl;*/
 	VisualProfiler::Instance().beginSession("test1");
 	msgpack_byte::container dest;
-	// tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t;
-	vector<int> unpacked_data;
-	tuple <char, unsigned int, double, string, vector<int>, map<string, uint64_t>> t;
-	vector<int> vec;
-	vec.assign(33, 4);
+	vector<std::string> unpacked_data, vec;
+	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t, unpacked_t;
+	vec.assign(33, std::string("asd"));
+	vector<unsigned int> unsig{ 1,2,3,4,5 };
 	string abc = "test string";
 	map<string, uint64_t> cde;
 	cde.insert(make_pair(string("abc"), 4142342342342343));
 	cde.insert(make_pair(string("cde"), 5));
 	cde.insert(make_pair(string("def"), 11231233));
 	// , abc, vec, cde
-	t = make_tuple('a', 10, 0.333333333333333, abc, vec, cde);
-	msgpack::pack(vec, dest);
+	t = make_tuple('a', 10, 0.333333333333333, abc, unsig, cde);
+	msgpack::pack(t, dest);
+	msgpack::unpack(unpacked_t, dest);
+	std::cout << std::get<0>(unpacked_t) << std::endl;
+	std::cout << std::get<1>(unpacked_t) << std::endl;
+	std::cout << std::get<2>(unpacked_t) << std::endl;
+	std::cout << std::get<3>(unpacked_t) << std::endl;
+	for (auto& x : std::get<4>(unpacked_t)) {
+		std::cout << x << std::endl;
+	}
+	for (auto& x : std::get<5>(unpacked_t)) {
+		std::cout << x.first << "\t" << x.second << std::endl;
+	}
 	cout << msgpack_byte::to_stringstream(dest).str() << endl;
-	cout << "Packed size: " << dest.size() << endl;
+	cout << "Packed size: " << dest.size() << "\t" << vec.size()<< endl;
 	msgpack::PrintCurrentUsage();
-	msgpack::unpack(unpacked_data, dest);
-	msgpack_byte::container::Iterator it = dest.begin();
+	/*msgpack::unpack(unpacked_data, dest);
+	std::cout << unpacked_data.size() << std::endl;
+	for (int i = 0; i < unpacked_data.size(); i++) {
+		std::cout << unpacked_data[i] << " ";
+	}
+	std::cout << std::endl;*/
 	VisualProfiler::Instance().endSession();
 	/*uint64_t total_bytes = 0;
 	msgpack_byte::container dest;
