@@ -1,6 +1,6 @@
 # Prerequisites
 *.d
-msgpack/results.json
+*.json
 # Compiled Object files
 *.slo
 *.lo
