@@ -14,6 +14,9 @@ A simple C++17 (only) compatible msgpack implementation.
 - vector
 - map
 - tuple
+- list
+- queue
+- deque
 - Primitive types
     - All integers (int8, int16, int32, int64) signed and unsigned
     - Float, Double

@@ -1,4 +1,5 @@
 #include <vector>
+#include <list>
 #include <chrono>
 #include <tuple>
 #include <random>
@@ -8,7 +9,7 @@
 #include <type_traits>
 
 #include "msgpack.hpp"
-#include "VisualProfiler.h"
+// #include "VisualProfiler.h"
 
 using namespace std;
 
@@ -98,10 +99,10 @@ int main() {
 		sum += runs[i];
 	}
 	cout << "Average time: " << (double)(sum / 100) << endl;*/
-	VisualProfiler::Instance().beginSession("test1");
+	// VisualProfiler::Instance().beginSession("test1");
 	msgpack_byte::container dest;
 	vector<std::string> unpacked_data, vec;
-	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>> t, unpacked_t;
+	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>, list<string>> t, unpacked_t;
 	vec.assign(33, std::string("asd"));
 	vector<unsigned int> unsig{ 1,2,3,4,5 };
 	string abc = "test string";
@@ -109,10 +110,14 @@ int main() {
 	cde.insert(make_pair(string("abc"), 4142342342342343));
 	cde.insert(make_pair(string("cde"), 5));
 	cde.insert(make_pair(string("def"), 11231233));
+	list<string> l;
+	l.push_back("abc");
+	l.push_back("cde");
+	l.push_back("def");
 	// , abc, vec, cde
-	t = make_tuple('a', 10, 0.333333333333333, abc, unsig, cde);
+	t = make_tuple('a', 10, 0.333333333333333, abc, unsig, cde, l);
 	msgpack::pack(t, dest);
-	msgpack::unpack(unpacked_t, dest);
+	/*msgpack::unpack(unpacked_t, dest);
 	std::cout << std::get<0>(unpacked_t) << std::endl;
 	std::cout << std::get<1>(unpacked_t) << std::endl;
 	std::cout << std::get<2>(unpacked_t) << std::endl;
@@ -125,14 +130,14 @@ int main() {
 	}
 	cout << msgpack_byte::to_stringstream(dest).str() << endl;
 	cout << "Packed size: " << dest.size() << "\t" << vec.size()<< endl;
-	msgpack::PrintCurrentUsage();
+	msgpack::PrintCurrentUsage();*/
 	/*msgpack::unpack(unpacked_data, dest);
 	std::cout << unpacked_data.size() << std::endl;
 	for (int i = 0; i < unpacked_data.size(); i++) {
 		std::cout << unpacked_data[i] << " ";
 	}
 	std::cout << std::endl;*/
-	VisualProfiler::Instance().endSession();
+	// VisualProfiler::Instance().endSession();
 	/*uint64_t total_bytes = 0;
 	msgpack_byte::container dest;
 	vector<tuple<char, vector<int>, int, string, double, map<int, vector<string> >, float > > test_vector(TEST_NUM);

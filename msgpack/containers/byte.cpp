@@ -7,17 +7,17 @@
 
 #include "byte.hpp"
 #include "../formats.hpp"
-#include "../VisualProfiler.h"
+// #include "../VisualProfiler.h"
 
 namespace msgpack_byte {
-	#define PROFILING 1
+	/*#define PROFILING 1
 	#ifdef PROFILING
 	#define PROFILE_SCOPE(name) VisualProfilerTimer timer##__LINE__(name)
-	#define PROFILE_FUNCTION()  PROFILE_SCOPE(__FUNCSIG__)
+	#define // PROFILE_FUNCTION()  PROFILE_SCOPE(__FUNCSIG__)
 	#else
 	#define PROFILE_SCOPE(name)
-	#define PROFILE_FUNCTION()
-	#endif
+	#define // PROFILE_FUNCTION()
+	#endif*/
 
 	// constructors
 
