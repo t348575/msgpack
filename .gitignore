@@ -34,3 +34,4 @@
 x64/
 CppProperties.json
 msgpack/x64/
+msgpack/results.json
