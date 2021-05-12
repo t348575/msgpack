@@ -873,6 +873,7 @@ namespace msgpack {
 		uint64_t pos = 0;
 		unpack<T>(dest, src, pos);
 	}
+
 };
 
 #endif

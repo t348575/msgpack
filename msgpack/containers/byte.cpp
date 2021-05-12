@@ -348,6 +348,26 @@ namespace msgpack_byte {
 		return this->ptr + lhs;
 	}
 
+	container::Iterator& container::Iterator::operator--() {
+		ptr--;
+		return *this;
+	}
+
+	container::Iterator container::Iterator::operator--(int) {
+		Iterator tmp = *this;
+		--(*this);
+		return tmp;
+	}
+
+	container::Iterator& container::Iterator::operator-=(int const& lhs) {
+		this->ptr -= lhs;
+		return *this;
+	}
+
+	container::Iterator container::Iterator::operator-(int const& lhs) {
+		return this->ptr - lhs;
+	}
+
 	bool operator== (const container::Iterator& a, const container::Iterator& b) {
 		return a.ptr == b.ptr;
 	}
@@ -364,7 +384,6 @@ namespace msgpack_byte {
 		return Iterator(&data[s]);
 	}
 
-	// iterator 2
 
 	// msgpack_byte as stringstream
 

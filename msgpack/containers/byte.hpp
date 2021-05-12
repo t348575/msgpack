@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <sstream>
 #include <iomanip>
+#include <any>
 
 namespace msgpack_byte {
 
@@ -82,6 +83,10 @@ namespace msgpack_byte {
 			Iterator operator++(int);
 			Iterator& operator+=(int const& lhs);
 			Iterator operator+(int const& lhs);
+			Iterator& operator--();
+			Iterator operator--(int);
+			Iterator& operator-=(int const& lhs);
+			Iterator operator-(int const& lhs);
 			friend bool operator== (const Iterator& a, const Iterator& b);
 			friend bool operator!= (const Iterator& a, const Iterator& b);
 
@@ -90,6 +95,24 @@ namespace msgpack_byte {
 		Iterator begin() const;
 		Iterator end() const;
 
+		class ObjectIterator {
+
+		public:
+
+			uint8_t* ptr;
+			std::any* data_ptr;
+
+			std::any operator*() const;
+			std::any operator->();
+			std::any& operator++();
+			std::any operator++(int);
+			std::any& operator+=(int const& lhs);
+			std::any operator+(int const& lhs);
+			ObjectIterator(uint8_t* m_ptr) : ptr(m_ptr) { }
+		};
+
+		ObjectIterator beginObjectIterator() const;
+		ObjectIterator endObjectIterator() const;
 		// reading
 
 		uint8_t get_header(uint64_t& pos);
