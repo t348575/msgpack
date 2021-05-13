@@ -9,9 +9,7 @@
 #include <any>
 
 namespace msgpack_byte {
-
 	class container {
-
 	public:
 
 		container() : s(0), c(2), data(new uint8_t[2]) {};
@@ -43,8 +41,6 @@ namespace msgpack_byte {
 		void push_back(char* src, uint32_t len);
 		void push_back(const std::string& src, uint32_t len = 0);
 
-		
-
 		// utility
 
 		bool empty() const;
@@ -65,7 +61,6 @@ namespace msgpack_byte {
 		// iterator class
 
 		class Iterator {
-
 		public:
 
 			uint8_t* ptr;
@@ -89,14 +84,12 @@ namespace msgpack_byte {
 			Iterator operator-(int const& lhs);
 			friend bool operator== (const Iterator& a, const Iterator& b);
 			friend bool operator!= (const Iterator& a, const Iterator& b);
-
 		};
-		
+
 		Iterator begin() const;
 		Iterator end() const;
 
 		class ObjectIterator {
-
 		public:
 
 			uint8_t* ptr;
@@ -149,7 +142,6 @@ namespace msgpack_byte {
 		uint8_t* data;
 		size_t s;
 		size_t c;
-
 	};
 
 	template<typename T>

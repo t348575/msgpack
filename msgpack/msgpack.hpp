@@ -16,7 +16,6 @@
 #include "formats.hpp"
 
 namespace msgpack {
-
 	// some definitions
 
 	using namespace msgpack_byte;

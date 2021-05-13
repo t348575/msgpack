@@ -9,7 +9,6 @@
 #include "../formats.hpp"
 
 namespace msgpack_byte {
-
 	// constructors
 
 	container::~container() {
@@ -272,11 +271,11 @@ namespace msgpack_byte {
 		return false;
 	}
 
-	uint8_t * container::raw_pointer() {
+	uint8_t* container::raw_pointer() {
 		return data;
 	}
-	
-	uint8_t * container::raw_pointer(uint64_t pos) {
+
+	uint8_t* container::raw_pointer(uint64_t pos) {
 		return data + pos;
 	}
 
@@ -374,7 +373,6 @@ namespace msgpack_byte {
 	container::Iterator container::end() const {
 		return Iterator(&data[s]);
 	}
-
 
 	// msgpack_byte as stringstream
 
