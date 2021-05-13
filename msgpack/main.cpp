@@ -9,7 +9,6 @@
 #include <type_traits>
 
 #include "msgpack.hpp"
-// #include "VisualProfiler.h"
 
 using namespace std;
 
@@ -99,7 +98,6 @@ int main() {
 		sum += runs[i];
 	}
 	cout << "Average time: " << (double)(sum / 100) << endl;*/
-	// VisualProfiler::Instance().beginSession("test1");
 	msgpack_byte::container dest;
 	vector<std::string> unpacked_data, vec;
 	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>, list<string>> t, unpacked_t;
@@ -116,7 +114,9 @@ int main() {
 	l.push_back("def");
 	// , abc, vec, cde
 	t = make_tuple('a', 10, 0.333333333333333, abc, unsig, cde, l);
+	// VisualProfiler::Instance().beginSession("test1");
 	msgpack::pack(t, dest);
+	// VisualProfiler::Instance().endSession();
 	/*msgpack::unpack(unpacked_t, dest);
 	std::cout << std::get<0>(unpacked_t) << std::endl;
 	std::cout << std::get<1>(unpacked_t) << std::endl;
@@ -137,7 +137,6 @@ int main() {
 		std::cout << unpacked_data[i] << " ";
 	}
 	std::cout << std::endl;*/
-	// VisualProfiler::Instance().endSession();
 	/*uint64_t total_bytes = 0;
 	msgpack_byte::container dest;
 	vector<tuple<char, vector<int>, int, string, double, map<int, vector<string> >, float > > test_vector(TEST_NUM);

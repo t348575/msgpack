@@ -14,40 +14,8 @@
 
 #include "containers/byte.hpp"
 #include "formats.hpp"
-// #include "VisualProfiler.h"
-
-struct AllocationMetrics {
-	uint32_t TotalAllocated = 0;
-	uint32_t TotalFreed = 0;
-	uint32_t CurrentUsage() { return TotalAllocated - TotalFreed; }
-};
-
-static AllocationMetrics s_AllocationMetrics;
-
-/*void* operator new(size_t size) {
-	s_AllocationMetrics.TotalAllocated += size;
-	return malloc(size);
-}
-
-void operator delete(void* memory, size_t size) {
-	s_AllocationMetrics.TotalFreed += size;
-	free(memory);
-}*/
 
 namespace msgpack {
-
-/*#define PROFILING 1
-#ifdef PROFILING
-#define PROFILE_SCOPE(name) VisualProfilerTimer timer##__LINE__(name)
-#define // PROFILE_FUNCTION()  PROFILE_SCOPE(__FUNCSIG__)
-#else
-#define PROFILE_SCOPE(name)
-#define // PROFILE_FUNCTION()
-#endif*/
-
-	void PrintCurrentUsage() {
-		std::cout << "Current usage: " << s_AllocationMetrics.CurrentUsage() << " Total Allocated: " << s_AllocationMetrics.TotalAllocated << " Total Freed: " << s_AllocationMetrics.TotalFreed << std::endl;
-	}
 
 	// some definitions
 
@@ -175,12 +143,11 @@ namespace msgpack {
 
 	// packing functions - primitive
 
-	void pack(const char& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
-
+	void pack(const char& src, container& dest, bool initial = false) {
 		dest.push_back(uint8_t(single_char));
 		dest.push_back(src);
 	}
-	void pack(const char* src, size_t len, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(const char* src, size_t len, container& dest, bool initial = false) {
 		uint32_t n = static_cast<uint32_t>(len);
 		if (n <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(n)));
@@ -202,7 +169,7 @@ namespace msgpack {
 		}
 		dest.push_back(src, n);
 	}
-	void pack(char* src, size_t len, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(char* src, size_t len, container& dest, bool initial = false) {
 		uint32_t n = static_cast<uint32_t>(len);
 		if (n <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(n)));
@@ -224,8 +191,7 @@ namespace msgpack {
 		}
 		dest.push_back(src, n);
 	}
-	void pack(const std::string& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
-
+	void pack(const std::string& src, container& dest, bool initial = false) {
 		uint32_t len = static_cast<uint32_t>(src.length());
 		if (len <= fix32) {
 			dest.push_back(uint8_t(fixstr_t(len)));
@@ -247,7 +213,7 @@ namespace msgpack {
 		}
 		dest.push_back(src);
 	}
-	void pack_uint(const uint64_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack_uint(const uint64_t& src, container& dest, bool initial = false) {
 		if (src <= posmax8) {
 			dest.push_back(uint8_t(ufixint_t(src)));
 		}
@@ -271,7 +237,7 @@ namespace msgpack {
 			throw std::range_error(std::to_string(src) + " out of range!");
 		}
 	}
-	void pack_int(const int64_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack_int(const int64_t& src, container& dest, bool initial = false) {
 		uint64_t a = src;;
 		if (src >= 0 && src <= posmax8) {
 			dest.push_back(uint8_t(src));
@@ -299,32 +265,31 @@ namespace msgpack {
 			throw std::range_error(std::to_string(src) + " out of range!");
 		}
 	}
-	void pack(uint8_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(uint8_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint16_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(uint16_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint32_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(uint32_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint64_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(uint64_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(int8_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(int8_t& src, container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int16_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(int16_t& src, container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int32_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(int32_t& src, container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int64_t& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(int64_t& src, container& dest, bool initial = false) {
 		pack_int(src, dest);
 	}
-	void pack(double& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
-
+	void pack(double& src, container& dest, bool initial = false) {
 		float src_as_float = float(src);
 		double src_back_to_double = double(src_as_float);
 		if (src_back_to_double == src) {
@@ -338,12 +303,11 @@ namespace msgpack {
 			dest.push_back(src);
 		}
 	}
-	void pack(float& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
-
+	void pack(float& src, container& dest, bool initial = false) {
 		dest.push_back(uint8_t(float32));
 		dest.push_back(src);
 	}
-	void pack(bool& src, container& dest, bool initial = false) { // PROFILE_FUNCTION();
+	void pack(bool& src, container& dest, bool initial = false) {
 		if (src) {
 			dest.push_back(uint8_t(tru));
 		}
@@ -359,7 +323,6 @@ namespace msgpack {
 
 	template<class F, class...Ts, std::size_t...Is>
 	void tuple_iterator_pack(std::tuple<Ts...>& tuple, F func, std::index_sequence<Is...>, container& dest) {
-		// PROFILE_FUNCTION();
 		using expander = int[];
 		(void)expander {
 			0, ((void)func(dest, std::get<Is>(tuple)), 0)...
@@ -368,27 +331,23 @@ namespace msgpack {
 
 	template<class F, class...Ts>
 	void tuple_iterator_pack(std::tuple<Ts...>& tuple, container& dest, F func) {
-		// PROFILE_FUNCTION();
 		tuple_iterator_pack(tuple, func, std::make_index_sequence<sizeof...(Ts)>(), dest);
 	}
 
 	template <typename T>
 	size_t LengthOf(const T&) {
-		// PROFILE_FUNCTION();
 		// std::cout << typeid(T).name() << "\t" << sizeof(T) << std::endl;
 		return sizeof(T);
 	}
 
 	template <typename ... Params>
 	size_t LengthOf(const std::basic_string<Params...>& s) {
-		// PROFILE_FUNCTION();
 		// std::cout << typeid(s).name() << "\t" << s.length() << std::endl;
 		return s.length();
 	}
 
 	template <typename ...T>
 	size_t LengthOf(const std::tuple<T...>& s) {
-		// PROFILE_FUNCTION();
 		auto sum_length = [](const auto&... args) {
 			// std::cout << typeid(args).name() << std::endl;
 			return (LengthOf(args) + ...);
@@ -398,7 +357,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::vector<T>& s) {
-		// PROFILE_FUNCTION();
 		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
@@ -414,7 +372,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::list<T>& s) {
-		// PROFILE_FUNCTION();
 		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
@@ -430,7 +387,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::queue<T>& s) {
-		// PROFILE_FUNCTION();
 		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
@@ -446,7 +402,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::deque<T>& s) {
-		// PROFILE_FUNCTION();
 		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
@@ -462,7 +417,6 @@ namespace msgpack {
 
 	template<typename A, typename B>
 	size_t LengthOf(const std::map<A, B>& s) {
-		// PROFILE_FUNCTION();
 		size_t result = 0;
 		for (auto& e : s) {
 			result += LengthOf(e.first);
@@ -473,7 +427,6 @@ namespace msgpack {
 
 	template <typename Tup>
 	size_t iterate_tuple_types_2(const Tup& t) {
-		// PROFILE_FUNCTION();
 		auto sum_length = [](const auto&... args) {
 			// std::cout << typeid(args).name() << std::endl;
 			return (LengthOf(args) + ...);
@@ -485,7 +438,6 @@ namespace msgpack {
 
 	template <typename T>
 	void pack(std::vector<T>& src, container& dest, bool initial) {
-		// PROFILE_FUNCTION();
 		size_t n = src.size();
 		if (initial) {
 			dest.check_resize(size_t((LengthOf(src) + 1) * compression_percent));
@@ -511,7 +463,6 @@ namespace msgpack {
 
 	template<typename ...T>
 	void pack(std::tuple<T...>& src, container& dest, bool initial) {
-		// PROFILE_FUNCTION();
 		size_t n = std::tuple_size<typename std::remove_reference<decltype(src)>::type>::value;
 		if (initial) {
 			// std::cout << recursive_size(src) << "\t" << size_t(recursive_size(src) * compression_percent) << std::endl;
@@ -540,7 +491,6 @@ namespace msgpack {
 
 	template<typename T, typename S>
 	void pack(std::map<T, S>& src, container& dest, bool initial) {
-		// PROFILE_FUNCTION();
 		size_t n = src.size();
 		// bool t_basic = true;
 		// bool s_basic = false;
@@ -587,7 +537,6 @@ namespace msgpack {
 
 	template<typename T>
 	void pack(std::list<T>& src, container& dest, bool initial) {
-		// PROFILE_FUNCTION();
 		size_t n = src.size();
 		if (initial) {
 			dest.check_resize(size_t((LengthOf(src) + 1) * compression_percent));
@@ -613,7 +562,6 @@ namespace msgpack {
 
 	template<typename T>
 	void pack(std::queue<T>& src, container& dest, bool initial) {
-		// PROFILE_FUNCTION();
 		size_t n = src.size();
 		if (initial) {
 			dest.check_resize(size_t((LengthOf(src) + 1) * compression_percent));
@@ -639,7 +587,6 @@ namespace msgpack {
 
 	template<typename T>
 	void pack(std::deque<T>& src, container& dest, bool initial) {
-		// PROFILE_FUNCTION();
 		size_t n = src.size();
 		if (initial) {
 			dest.check_resize(size_t((LengthOf(src) + 1) * compression_percent));
@@ -836,8 +783,6 @@ namespace msgpack {
 		}
 	}
 
-
-
 	template<typename T>
 	void unpack(std::vector<T>& dest, container& src) {
 		uint64_t pos = 0;
@@ -873,7 +818,6 @@ namespace msgpack {
 		uint64_t pos = 0;
 		unpack<T>(dest, src, pos);
 	}
-
 };
 
 #endif
