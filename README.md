@@ -21,7 +21,8 @@ A simple C++17 (only) compatible msgpack implementation.
 - Primitive types
     - All integers (int8, int16, int32, int64) signed and unsigned
     - Float, Double
-    - String (char *, std::string)
+    - String (char, char *, std::string)
+    - nullptr or void *
 
 ### Data structures to be added
 - list
@@ -35,7 +36,7 @@ A simple C++17 (only) compatible msgpack implementation.
 - Write to streams instead of stringstream or string
 
 ### Current performance
-- ~ 2GB of randomly generated data (not fixed sized `vectors`, `maps`, `tuple` and `std::string`) packed in 6.56 seconds on an `i7-7700HQ`
+- ~ 2GB of randomly generated data (not fixed sized `vectors`, `maps`, `tuple` and `std::string`, `double`, `int`, `char`) packed in 6.56 seconds on an `i7-7700HQ`
 - Memory allocation could be better optimized
 
 ### Instructions
@@ -43,7 +44,7 @@ A simple C++17 (only) compatible msgpack implementation.
 2. Include msgpack.hpp
 
 ### Hello World
-Compile and run main.cpp to run a sample benchmark ~ 100 - 250 MB
+Compile and run test.cpp to run a sample benchmark ~ 100 - 250 MB, or run the hello world below.
 ```cpp
 #include <iostream>
 #include <tuple>
@@ -71,6 +72,7 @@ int main() {
     msgpack::unpack(unpacked, dest); // pass container to parse into and the byte container
 
     std::cout << msgpack_byte::to_stringstream(dest).str() << std::endl; // return a stringstream of the packed data (in hex)
+    std::cout << msgpack_byte::to_string(dest) << std::endl; // return a string
     std::cout << "Packed size: " << dest.size() << std::endl;
     return 0;
 }
