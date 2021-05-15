@@ -79,65 +79,8 @@ string get_string() {
 	}
 	return result;
 }
-
 int main() {
-	string z;
-	/*double runs[100];
-	double sum = 0;
-	for (int j = 0; j < 100; j++) {
-		auto start = chrono::high_resolution_clock::now();
-		vector<uint8_t> a(1000000000);
-		for (int i = 0; i < 1000000000; i++) {
-			a.push_back((uint8_t)14);
-		}
-		auto end = chrono::high_resolution_clock::now();
-		runs[j] = (double)chrono::duration_cast<chrono::milliseconds>(end - start).count();
-		cout << "Took: " << runs[j] << endl;
-	}
-	for (int i = 0; i < 100; i++) {
-		sum += runs[i];
-	}
-	cout << "Average time: " << (double)(sum / 100) << endl;*/
-	msgpack_byte::container dest;
-	vector<std::string> unpacked_data, vec;
-	tuple <char, unsigned int, double, string, vector<unsigned int>, map<string, uint64_t>, list<string>> t, unpacked_t;
-	vec.assign(33, std::string("asd"));
-	vector<unsigned int> unsig{ 1,2,3,4,5 };
-	string abc = "test string";
-	map<string, uint64_t> cde;
-	cde.insert(make_pair(string("abc"), 4142342342342343));
-	cde.insert(make_pair(string("cde"), 5));
-	cde.insert(make_pair(string("def"), 11231233));
-	list<string> l;
-	l.push_back("abc");
-	l.push_back("cde");
-	l.push_back("def");
-	// , abc, vec, cde
-	t = make_tuple('a', 10, 0.333333333333333, abc, unsig, cde, l);
-	// VisualProfiler::Instance().beginSession("test1");
-	msgpack::pack(t, dest);
-	// VisualProfiler::Instance().endSession();
-	/*msgpack::unpack(unpacked_t, dest);
-	std::cout << std::get<0>(unpacked_t) << std::endl;
-	std::cout << std::get<1>(unpacked_t) << std::endl;
-	std::cout << std::get<2>(unpacked_t) << std::endl;
-	std::cout << std::get<3>(unpacked_t) << std::endl;
-	for (auto& x : std::get<4>(unpacked_t)) {
-		std::cout << x << std::endl;
-	}
-	for (auto& x : std::get<5>(unpacked_t)) {
-		std::cout << x.first << "\t" << x.second << std::endl;
-	}
-	cout << msgpack_byte::to_stringstream(dest).str() << endl;
-	cout << "Packed size: " << dest.size() << "\t" << vec.size()<< endl;
-	msgpack::PrintCurrentUsage();*/
-	/*msgpack::unpack(unpacked_data, dest);
-	std::cout << unpacked_data.size() << std::endl;
-	for (int i = 0; i < unpacked_data.size(); i++) {
-		std::cout << unpacked_data[i] << " ";
-	}
-	std::cout << std::endl;*/
-	/*uint64_t total_bytes = 0;
+	uint64_t total_bytes = 0;
 	msgpack_byte::container dest;
 	vector<tuple<char, vector<int>, int, string, double, map<int, vector<string> >, float > > test_vector(TEST_NUM);
 	auto start_gen = chrono::high_resolution_clock::now();
@@ -172,6 +115,5 @@ int main() {
 	auto end_pack = chrono::high_resolution_clock::now();
 	std::cout << dest.size() << " bytes " << (double)(dest.size() / 1e6) << "MB packed size in " << double(chrono::duration_cast<chrono::milliseconds>(end_pack - start_pack).count()) << " milliseconds" << endl;
 	std::cout << "Packing efficiency: " << (double)((double)dest.size() / (double)total_bytes) * (double)100 << "%" << std::endl;
-	msgpack::PrintCurrentUsage();*/
 	return 0;
 }
