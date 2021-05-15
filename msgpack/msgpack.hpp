@@ -142,6 +142,9 @@ namespace msgpack {
 
 	// packing functions - primitive
 
+	void pack(const void* src, container& dest, bool initial = false) {
+		dest.push_back(uint8_t(nil));
+	}
 	void pack(const char& src, container& dest, bool initial = false) {
 		dest.push_back(uint8_t(single_char));
 		dest.push_back(src);
@@ -264,31 +267,31 @@ namespace msgpack {
 			throw std::range_error(std::to_string(src) + " out of range!");
 		}
 	}
-	void pack(uint8_t& src, container& dest, bool initial = false) {
+	void pack(const uint8_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint16_t& src, container& dest, bool initial = false) {
+	void pack(const uint16_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint32_t& src, container& dest, bool initial = false) {
+	void pack(const uint32_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(uint64_t& src, container& dest, bool initial = false) {
+	void pack(const uint64_t& src, container& dest, bool initial = false) {
 		pack_uint(static_cast<uint64_t>(src), dest);
 	}
-	void pack(int8_t& src, container& dest, bool initial = false) {
+	void pack(const int8_t& src, container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int16_t& src, container& dest, bool initial = false) {
+	void pack(const int16_t& src, container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int32_t& src, container& dest, bool initial = false) {
+	void pack(const int32_t& src, container& dest, bool initial = false) {
 		pack_int(static_cast<int64_t>(src), dest);
 	}
-	void pack(int64_t& src, container& dest, bool initial = false) {
+	void pack(const int64_t& src, container& dest, bool initial = false) {
 		pack_int(src, dest);
 	}
-	void pack(double& src, container& dest, bool initial = false) {
+	void pack(const double& src, container& dest, bool initial = false) {
 		float src_as_float = float(src);
 		double src_back_to_double = double(src_as_float);
 		if (src_back_to_double == src) {
@@ -302,11 +305,11 @@ namespace msgpack {
 			dest.push_back(src);
 		}
 	}
-	void pack(float& src, container& dest, bool initial = false) {
+	void pack(const float& src, container& dest, bool initial = false) {
 		dest.push_back(uint8_t(float32));
 		dest.push_back(src);
 	}
-	void pack(bool& src, container& dest, bool initial = false) {
+	void pack(const bool& src, container& dest, bool initial = false) {
 		if (src) {
 			dest.push_back(uint8_t(tru));
 		}
@@ -314,9 +317,6 @@ namespace msgpack {
 			dest.push_back(uint8_t(flse));
 		}
 	}
-	/*void pack(container& dest, bool initial = false) {
-		dest.push_back(uint8_t(nil));
-	}*/
 
 	// stl iterators
 
@@ -335,20 +335,17 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const T&) {
-		// std::cout << typeid(T).name() << "\t" << sizeof(T) << std::endl;
 		return sizeof(T);
 	}
 
 	template <typename ... Params>
 	size_t LengthOf(const std::basic_string<Params...>& s) {
-		// std::cout << typeid(s).name() << "\t" << s.length() << std::endl;
 		return s.length();
 	}
 
 	template <typename ...T>
 	size_t LengthOf(const std::tuple<T...>& s) {
 		auto sum_length = [](const auto&... args) {
-			// std::cout << typeid(args).name() << std::endl;
 			return (LengthOf(args) + ...);
 		};
 		return std::apply(sum_length, s);
@@ -356,7 +353,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::vector<T>& s) {
-		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
 		}
@@ -371,7 +367,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::list<T>& s) {
-		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
 		}
@@ -386,7 +381,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::queue<T>& s) {
-		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
 		}
@@ -401,7 +395,6 @@ namespace msgpack {
 
 	template <typename T>
 	size_t LengthOf(const std::deque<T>& s) {
-		// std::cout << typeid(s).name() << "\t" << s.size() * sizeof(T) << std::endl;
 		if (std::is_integral<T>::value) {
 			return s.size() * sizeof(T);
 		}
@@ -427,7 +420,6 @@ namespace msgpack {
 	template <typename Tup>
 	size_t iterate_tuple_types_2(const Tup& t) {
 		auto sum_length = [](const auto&... args) {
-			// std::cout << typeid(args).name() << std::endl;
 			return (LengthOf(args) + ...);
 		};
 		return std::apply(sum_length, t);
@@ -464,7 +456,6 @@ namespace msgpack {
 	void pack(std::tuple<T...>& src, container& dest, bool initial) {
 		size_t n = std::tuple_size<typename std::remove_reference<decltype(src)>::type>::value;
 		if (initial) {
-			// std::cout << recursive_size(src) << "\t" << size_t(recursive_size(src) * compression_percent) << std::endl;
 			dest.check_resize(size_t((iterate_tuple_types_2(src) + 1) * compression_percent));
 		}
 		if (n <= 15) {
@@ -478,9 +469,6 @@ namespace msgpack {
 			dest.push_back(uint8_t(arr32));
 			dest.push_back(uint32_t(n));
 		}
-		// iterate_tuple(src, dest);
-
-		// msgpack::tuple_iterator_2(src, dest, [](container& dest, auto& x) { pack(x, dest); });
 
 		tuple_iterator_pack(src, dest, [](container& dest, auto& src) { pack(src, dest, false); });
 		if (initial) {
@@ -491,8 +479,6 @@ namespace msgpack {
 	template<typename T, typename S>
 	void pack(std::map<T, S>& src, container& dest, bool initial) {
 		size_t n = src.size();
-		// bool t_basic = true;
-		// bool s_basic = false;
 		if (initial) {
 			dest.check_resize(size_t((LengthOf(src) + 1) * compression_percent));
 		}
@@ -507,25 +493,7 @@ namespace msgpack {
 			dest.push_back(uint8_t(map32));
 			dest.push_back(uint32_t(n));
 		}
-		/*if (!(std::is_integral<T>::value || std::is_same<std::string, T>::value)) {
-			t_basic = false;
-		}
-		if (std::is_integral<T>::value || std::is_same<std::string, T>::value) {
-			s_basic = true;
-		}*/
 		for (auto& e : src) {
-			/*if (t_basic) {
-				pack(e.first, dest, false);
-			}
-			else {
-				pack(e.first, dest, false);
-			}
-			if (s_basic) {
-				pack(e.second, dest, false);
-			}
-			else {
-				pack(e.second, dest, false);
-			}*/
 			pack(e.first, dest, false);
 			pack(e.second, dest, false);
 		}
