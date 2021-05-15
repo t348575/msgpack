@@ -135,6 +135,7 @@ namespace msgpack_byte {
 	}
 
 	std::stringstream to_stringstream(container& element, bool hex = true);
+	std::string to_string(container& element);
 };
 
 #endif
