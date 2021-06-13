@@ -448,7 +448,7 @@ namespace msgpack {
 			pack(src[i], dest, false);
 		}
 		if (initial) {
-			dest.shrink_to_fit();
+			// dest.shrink_to_fit();
 		}
 	}
 
@@ -472,7 +472,7 @@ namespace msgpack {
 
 		tuple_iterator_pack(src, dest, [](container& dest, auto& src) { pack(src, dest, false); });
 		if (initial) {
-			dest.shrink_to_fit();
+			// dest.shrink_to_fit();
 		}
 	}
 
@@ -498,7 +498,7 @@ namespace msgpack {
 			pack(e.second, dest, false);
 		}
 		if (initial) {
-			dest.shrink_to_fit();
+			// dest.shrink_to_fit();
 		}
 	}
 
@@ -523,7 +523,7 @@ namespace msgpack {
 			pack(x, dest, false);
 		}
 		if (initial) {
-			dest.shrink_to_fit();
+			// dest.shrink_to_fit();
 		}
 	}
 
@@ -548,7 +548,7 @@ namespace msgpack {
 			pack(x, dest, false);
 		}
 		if (initial) {
-			dest.shrink_to_fit();
+			// dest.shrink_to_fit();
 		}
 	}
 
@@ -573,7 +573,7 @@ namespace msgpack {
 			pack(x, dest, false);
 		}
 		if (initial) {
-			dest.shrink_to_fit();
+			// dest.shrink_to_fit();
 		}
 	}
 
