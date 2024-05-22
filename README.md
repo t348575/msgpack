@@ -1,4 +1,4 @@
-# msgpack ![Visits](https://xn4nc029ta.execute-api.ap-south-1.amazonaws.com/default/repo-view-counter?repo=msgpack)
+# msgpack ![Visits](https://lambda.348575.xyz/repo-view-counter?repo=msgpack)
 
 A simple C++17 (only) compatible msgpack implementation.
 
